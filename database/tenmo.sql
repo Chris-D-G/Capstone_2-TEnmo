@@ -42,11 +42,11 @@ CREATE TABLE transfer(
 	transfer_id int NOT NULL DEFAULT nextval ('seq_transfer_id'),
 	sender_id int NOT NULL,
 	receiver_id int NOT NULL,
-	status boolean NOT NULL,
+	approve_status varchar(10) NOT NULL,
 	amount numeric(13,2) NOT NULL,
 	CONSTRAINT PK_transfer PRIMARY KEY(transfer_id),
-	CONSTRAINT FK_transfer_send_tenmo_user FOREIGN KEY (sender_id) REFERENCES tenmo_user(user_id),
-	CONSTRAINT FK_transfer_receive_tenmo_user FOREIGN KEY (receiver_id) REFERENCES tenmo_user(user_id)
+	CONSTRAINT FK_transfer_send_tenmo_user FOREIGN KEY (sender_id) REFERENCES account(account_id),
+	CONSTRAINT FK_transfer_receive_tenmo_user FOREIGN KEY (receiver_id) REFERENCES account(account_id)
 );
 
 INSERT INTO tenmo_user (user_id, username, password_hash)
@@ -62,6 +62,10 @@ VALUES(2001,1001,1000),
 (2004,1004,40000)
 ;
 
+INSERT INTO transfer (transfer_id,sender_id,receiver_id,approve_status,amount)
+VALUES(3001,2001,2002,'*Approved*',500),
+(3002,2004,2003,'*Approved*',20000);
+
 COMMIT;
-ROLLBACK;
+-- ROLLBACK;
 
