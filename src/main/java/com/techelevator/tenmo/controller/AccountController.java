@@ -28,7 +28,7 @@ public class AccountController {
     public List<Account> accountList(Principal principal) {
         String username = principal.getName();
 
-        List<Account> accountList = accountDao.findByUserId(username);
+        List<Account> accountList = accountDao.findByUsername(username);
         if(accountList == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
         } else {

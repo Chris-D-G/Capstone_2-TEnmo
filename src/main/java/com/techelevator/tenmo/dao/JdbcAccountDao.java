@@ -43,9 +43,9 @@ public class JdbcAccountDao implements AccountDao {
     @Override
     public List<Account> findByUsername(String username){
         List<Account> accountList = new ArrayList<>();
-        String sql = "SELECT account_id, balance, user_id FROM account " +
+        String sql = "SELECT balance FROM account " + //tenmo_user.username,
                 "   JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
-                "   WHERE username = ?;";
+                "   WHERE tenmo_user.username = ?;";
 
         //        String sql = "SELECT account_id, balance, user_id FROM account " +
 //                    "   JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
@@ -61,7 +61,8 @@ public class JdbcAccountDao implements AccountDao {
         } catch(CannotGetJdbcConnectionException e) {
             System.out.println("Could not connect to database" + e);
         } catch(BadSqlGrammarException e) {
-            System.out.println("Bad Sql Grammar" + e);
+            System.out.println("Bad Query: " + e.getSql() +
+                    "\n"+e.getSQLException());
         } catch(DataIntegrityViolationException e) {
             System.out.println("Data Integrity Exception" + e);
         }
@@ -148,9 +149,10 @@ public class JdbcAccountDao implements AccountDao {
 
     public Account mapRowToAccount(SqlRowSet row) {
         Account account = new Account();
-        account.setAccountId(row.getInt("account-id"));
-        account.setUserId(row.getInt("user_id"));
+//        account.setAccountId(row.getInt("account_id"));
+//        account.setUserId(row.getInt("user_id"));
         account.setBalance(row.getBigDecimal("balance"));
+
 
         return account;
     }
