@@ -1,8 +1,8 @@
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS tenmo_user, account;
+DROP TABLE IF EXISTS tenmo_user, account, transfer;
 
-DROP SEQUENCE IF EXISTS seq_user_id, seq_account_id;
+DROP SEQUENCE IF EXISTS seq_user_id, seq_account_id, seq_transfer_id;
 
 -- Sequence to start user_id values at 1001 instead of 1
 CREATE SEQUENCE seq_user_id
@@ -43,17 +43,17 @@ CREATE TABLE transfer(
 	sender_id int NOT NULL,
 	receiver_id int NOT NULL,
 	status boolean NOT NULL,
-	amount numeric NOT NULL,
+	amount numeric(13,2) NOT NULL,
 	CONSTRAINT PK_transfer PRIMARY KEY(transfer_id),
 	CONSTRAINT FK_transfer_send_tenmo_user FOREIGN KEY (sender_id) REFERENCES tenmo_user(user_id),
 	CONSTRAINT FK_transfer_receive_tenmo_user FOREIGN KEY (receiver_id) REFERENCES tenmo_user(user_id)
 );
 
 INSERT INTO tenmo_user (user_id, username, password_hash)
-VALUES(1001,kevin,'$2a$10$EPV7k.ntx6zIQaDiVF1ptuFeUCkwUkQnDq17fUHhPojTxIG/0xis6'),
-(1002,chris,'$2a$10$bnnRv/C9XDXlRA9.paxgbODzi4n5fw/D06WI2AWyoMmGY75MwZeoG'),
-(1003,eric,'$2a$10$/OMTuByaTxKtyqXN.m9hnezEv9DdhCaB9Jnnmnc7yh6ODp1KV8Cz.'),
-(1004,thwin,'$2a$10$QB.eOvz/SYiltE.g8ghNPu.jW23vKIu5cjLSfGeFYOn/f.6UJi1su');
+VALUES(1001,'kevin','$2a$10$EPV7k.ntx6zIQaDiVF1ptuFeUCkwUkQnDq17fUHhPojTxIG/0xis6'),
+(1002,'chris','$2a$10$bnnRv/C9XDXlRA9.paxgbODzi4n5fw/D06WI2AWyoMmGY75MwZeoG'),
+(1003,'eric','$2a$10$/OMTuByaTxKtyqXN.m9hnezEv9DdhCaB9Jnnmnc7yh6ODp1KV8Cz.'),
+(1004,'thwin','$2a$10$QB.eOvz/SYiltE.g8ghNPu.jW23vKIu5cjLSfGeFYOn/f.6UJi1su');
 
 INSERT INTO account(account_id,user_id,balance)
 VALUES(2001,1001,1000),
@@ -63,3 +63,5 @@ VALUES(2001,1001,1000),
 ;
 
 COMMIT;
+ROLLBACK;
+
