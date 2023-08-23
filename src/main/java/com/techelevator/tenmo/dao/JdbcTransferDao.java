@@ -23,16 +23,17 @@ public class JdbcTransferDao implements TransferDao {
     public List<Transfer> getTransfersByUsername(String username) {
         List<Transfer> transfersByUser = new ArrayList<>();
         /*
-            SELECT transfer_id,sender_id,receiver_id,approve_status,amount
+            SELECT transfer_id, amount
             FROM transfer
             WHERE sender_id=(SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = '?')
             OR receiver_id = (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = '?');
         */
 
-        String sql = "SELECT transfer_id,sender_id,receiver_id,approve_status,amount " +
-                     "FROM transfer " +
-                     "WHERE sender_id=(SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = '?') " +
-                     "OR receiver_id = (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = '?');";
+        String sql = "SELECT transfer_id, amount \n" +
+                "FROM transfer\n" +
+                "WHERE sender_id=(SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
+                "OR receiver_id = (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
+                "ORDER BY transfer_id;";
         try {
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql,username,username);
             while(results.next()){
@@ -44,7 +45,7 @@ public class JdbcTransferDao implements TransferDao {
             System.out.println("Bad Query: " + e.getSql() +
                     "\n"+e.getSQLException());
         }catch (DataIntegrityViolationException e){
-            System.out.println("Data Integrity Violation" + e.getMessage());
+            System.out.println("Data Integrity Violation: " + e.getMessage());
         }
 
         return transfersByUser;
