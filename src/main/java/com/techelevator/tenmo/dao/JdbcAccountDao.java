@@ -1,6 +1,9 @@
 package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.model.Account;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.BadSqlGrammarException;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -20,27 +23,47 @@ public class JdbcAccountDao implements AccountDao {
 
     @Override
     public Account createAccount(Account account) {
+        Account createdAccount = new Account();
         String sql = "INSERT INTO account (balance, user_id) " +
                 "VALUES (?, ?) RETURNING account_id;";
 
-        int accountId = jdbcTemplate.queryForObject(sql, int.class, account.getBalance(), account.getUserId());
-
-        return findAccountById(accountId);
+        try {
+            int accountId = jdbcTemplate.queryForObject(sql, int.class, account.getBalance(), account.getUserId());
+            createdAccount = findAccountById(accountId);
+        } catch(CannotGetJdbcConnectionException e) {
+            System.out.println("Could not connect to database" + e);
+        } catch(BadSqlGrammarException e) {
+            System.out.println("Bad Sql Grammar" + e);
+        } catch(DataIntegrityViolationException e) {
+            System.out.println("Data Integrity Exception" + e);
+        }
+        return createdAccount;
     }
 
     @Override
-    public List<Account> findByUserId(String username){
+    public List<Account> findByUsername(String username){
         List<Account> accountList = new ArrayList<>();
-//        String sql = "SELECT account_id, balance, user_id FROM account " +
-//                    "   JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
-//                    "   WHERE user_id = (SELECT user_id FROM tenmo_user WHERE username = ?);";
         String sql = "SELECT account_id, balance, user_id FROM account " +
                 "   JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
                 "   WHERE username = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username);
-        while(results.next()) {
-            Account account = mapRowToAccount(results);
-            accountList.add(account);
+
+        //        String sql = "SELECT account_id, balance, user_id FROM account " +
+//                    "   JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
+//                    "   WHERE user_id = (SELECT user_id FROM tenmo_user WHERE username = ?);";
+
+
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username);
+            while(results.next()) {
+                Account account = mapRowToAccount(results);
+                accountList.add(account);
+            }
+        } catch(CannotGetJdbcConnectionException e) {
+            System.out.println("Could not connect to database" + e);
+        } catch(BadSqlGrammarException e) {
+            System.out.println("Bad Sql Grammar" + e);
+        } catch(DataIntegrityViolationException e) {
+            System.out.println("Data Integrity Exception" + e);
         }
         return accountList;
     }
@@ -49,9 +72,17 @@ public class JdbcAccountDao implements AccountDao {
     public Account findAccountById(int accountId) {
         Account account = null;
         String sql = "SELECT account_id, user_id, balance FROM account WHERE account_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId);
-        if(results.next()) {
-            account = mapRowToAccount(results);
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId);
+            if(results.next()) {
+                account = mapRowToAccount(results);
+            }
+        } catch(CannotGetJdbcConnectionException e) {
+            System.out.println("Could not connect to database" + e);
+        } catch(BadSqlGrammarException e) {
+            System.out.println("Bad Sql Grammar" + e);
+        } catch(DataIntegrityViolationException e) {
+            System.out.println("Data Integrity Exception" + e);
         }
         return account;
     }
@@ -60,9 +91,17 @@ public class JdbcAccountDao implements AccountDao {
     public Account updateAccount(int accountId, BigDecimal balance) {
         Account account = null;
         String sql = "UPDATE account SET balance = ? WHERE account_id = ?;";
-        jdbcTemplate.update(sql, balance, accountId);
+        try {
+            jdbcTemplate.update(sql, balance, accountId);
+            account = findAccountById(accountId);
+        } catch(CannotGetJdbcConnectionException e) {
+            System.out.println("Could not connect to database" + e);
+        } catch(BadSqlGrammarException e) {
+            System.out.println("Bad Sql Grammar" + e);
+        } catch(DataIntegrityViolationException e) {
+            System.out.println("Data Integrity Exception" + e);
+        }
 
-        account = findAccountById(accountId);
         return account;
     }
 
@@ -74,7 +113,15 @@ public class JdbcAccountDao implements AccountDao {
         BigDecimal transferAmount = new BigDecimal(amount);
 
         BigDecimal newBalance = currentBalance.add(transferAmount);
-        jdbcTemplate.update(sql, newBalance, account.getAccountId());
+        try {
+            jdbcTemplate.update(sql, newBalance, account.getAccountId());
+        } catch(CannotGetJdbcConnectionException e) {
+            System.out.println("Could not connect to database" + e);
+        } catch(BadSqlGrammarException e) {
+            System.out.println("Bad Sql Grammar" + e);
+        } catch(DataIntegrityViolationException e) {
+            System.out.println("Data Integrity Exception" + e);
+        }
 
         return findAccountById(account.getAccountId());
     }
@@ -86,7 +133,15 @@ public class JdbcAccountDao implements AccountDao {
         BigDecimal transferAmount = new BigDecimal(amount);
 
         BigDecimal newBalance = currentBalance.subtract(transferAmount);
-        jdbcTemplate.update(sql, newBalance, account.getAccountId());
+        try {
+            jdbcTemplate.update(sql, newBalance, account.getAccountId());
+        } catch(CannotGetJdbcConnectionException e) {
+            System.out.println("Could not connect to database" + e);
+        } catch(BadSqlGrammarException e) {
+            System.out.println("Bad Sql Grammar" + e);
+        } catch(DataIntegrityViolationException e) {
+            System.out.println("Data Integrity Exception" + e);
+        }
 
         return findAccountById(account.getAccountId());
     }

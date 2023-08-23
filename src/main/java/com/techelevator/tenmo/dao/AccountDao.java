@@ -9,7 +9,7 @@ import java.util.List;
 public interface AccountDao {
 
     Account createAccount(Account account);
-    List<Account> findByUserId(String username);
+    List<Account> findByUsername(String username);
     Account findAccountById(int accountId);
     Account updateAccount(int accountId, BigDecimal balance);
 
