@@ -68,7 +68,6 @@ public class JdbcUserDao implements UserDao {
         }
 
         // TODO: Create the account record with initial balance
-
         return true;
     }
 
