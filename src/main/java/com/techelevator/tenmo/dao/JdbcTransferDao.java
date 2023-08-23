@@ -29,8 +29,12 @@ public class JdbcTransferDao implements TransferDao {
             OR receiver_id = (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = '?');
         */
 
-        String sql = "SELECT transfer_id, amount \n" +
+        String sql = "SELECT transfer_id,amount ,t1.username AS from,t2.username AS to\n" +
                 "FROM transfer\n" +
+                "JOIN account AS a1 ON transfer.sender_id = a1.account_id\n" +
+                "JOIN account AS a2 ON transfer.receiver_id = a2.account_id\n" +
+                "JOIN tenmo_user AS t1 on a1.user_id = t1.user_id\n" +
+                "JOIN tenmo_user AS t2 on a2.user_id = t2.user_id\n" +
                 "WHERE sender_id=(SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
                 "OR receiver_id = (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
                 "ORDER BY transfer_id;";
@@ -65,7 +69,8 @@ public class JdbcTransferDao implements TransferDao {
         try{
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql,id);
             if(results.next()){
-                retreivedTransfer = mapRowSetToTransfer(results);
+                retreivedTransfer = mapRowSetToTransfer(results)
+                retreivedTransfer.;
             }
         }catch (CannotGetJdbcConnectionException e){
             System.out.println("Cannot connect to database!");
@@ -139,6 +144,8 @@ public class JdbcTransferDao implements TransferDao {
         Transfer mappedTransfer = new Transfer();
         mappedTransfer.setTransfer_id(results.getInt("transfer_id"));
         mappedTransfer.setSender_id(results.getInt("sender_id"));
+//        mappedTransfer.setSenderName(results.getString("t1.username"));
+//        mappedTransfer.setReceiverName(results.getString("t2.username"));
         mappedTransfer.setReceiver_id(results.getInt("receiver_id"));
         mappedTransfer.setAmount(results.getBigDecimal("amount"));
         mappedTransfer.setStatus(results.getString("approve_status"));

@@ -22,7 +22,7 @@ public class TransferController {
     }
 
     @PostMapping(path = "user/transfer")
-    public Transfer createTransfer(@RequestBody @Valid Transfer transfer) {
+    public Transfer createTransfer(@RequestBody @Valid Transfer transfer, Principal principal) {
         return transferDao.createTransfer(transfer);
     }
 
@@ -34,7 +34,7 @@ public class TransferController {
 
 
         }catch (Exception e){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Nothing found!");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Something is not working properly! " + e.getMessage());
         }
     }
 
