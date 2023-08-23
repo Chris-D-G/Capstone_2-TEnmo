@@ -49,23 +49,8 @@ CREATE TABLE transfer(
 	CONSTRAINT FK_transfer_receive_tenmo_user FOREIGN KEY (receiver_id) REFERENCES account(account_id)
 );
 
-INSERT INTO tenmo_user (user_id, username, password_hash)
-VALUES(1001,'kevin','$2a$10$EPV7k.ntx6zIQaDiVF1ptuFeUCkwUkQnDq17fUHhPojTxIG/0xis6'),
-(1002,'chris','$2a$10$bnnRv/C9XDXlRA9.paxgbODzi4n5fw/D06WI2AWyoMmGY75MwZeoG'),
-(1003,'eric','$2a$10$/OMTuByaTxKtyqXN.m9hnezEv9DdhCaB9Jnnmnc7yh6ODp1KV8Cz.'),
-(1004,'thwin','$2a$10$QB.eOvz/SYiltE.g8ghNPu.jW23vKIu5cjLSfGeFYOn/f.6UJi1su');
 
-INSERT INTO account(account_id,user_id,balance)
-VALUES(2001,1001,1000),
-(2002,1002,2000),
-(2003,1003,3000),
-(2004,1004,40000)
-;
-
-INSERT INTO transfer (transfer_id,sender_id,receiver_id,approve_status,amount)
-VALUES(3001,2001,2002,'*Approved*',500),
-(3002,2004,2003,'*Approved*',20000);
 
 COMMIT;
--- ROLLBACK;
+
 

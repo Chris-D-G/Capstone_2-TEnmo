@@ -8,12 +8,16 @@ public class Transfer {
     private int transfer_id;
     @NotEmpty
     private int sender_id;
+
+    private String senderName;
     @NotEmpty
     private int receiver_id;
+
+    private String receiverName;
     @NotNull
     private BigDecimal amount;
     @NotEmpty
-    private String status;
+    private String status = "*Pending*";
 
 
     public Transfer() {
@@ -59,12 +63,30 @@ public class Transfer {
         this.status = status;
     }
 
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
+    }
+
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    public void setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
+    }
+
     @Override
     public String toString() {
         return "Transfer{" +
                 "transfer_id=" + transfer_id +
                 ", sender_id=" + sender_id +
+                ", senderName='" + senderName + '\'' +
                 ", receiver_id=" + receiver_id +
+                ", receiverName='" + receiverName + '\'' +
                 ", amount=" + amount +
                 ", status='" + status + '\'' +
                 '}';
