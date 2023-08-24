@@ -57,7 +57,7 @@ public class JdbcTransferDao implements TransferDao {
         }catch (DataIntegrityViolationException e){
             throw new RuntimeException("Database Integrity Violation", e);
         }
-        return null;
+        return returnedTransfers;
     }
 
     @Override

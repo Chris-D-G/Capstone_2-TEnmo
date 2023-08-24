@@ -32,18 +32,14 @@ public class JdbcUserDao implements UserDao {
         Integer id = -1;
         try{
             id = jdbcTemplate.queryForObject(sql, Integer.class, username);
-            if (id != null) {
-                id = 0;
-            } else {
-                id = -1;
-            }
+
         }catch (CannotGetJdbcConnectionException e){
-            System.out.println("Cannot connect to database!");
+            throw new RuntimeException("Unable to contact the database!", e);
         }catch (BadSqlGrammarException e){
-            System.out.println("Bad Query: " + e.getSql() +
-                    "\n"+e.getSQLException());
+            throw new RuntimeException("Bad SQL query: " + e.getSql()
+                    +"\n"+e.getSQLException(), e);
         }catch (DataIntegrityViolationException e){
-            System.out.println("Data Integrity Violation: " + e.getMessage());
+            throw new RuntimeException("Database Integrity Violation", e);
         }
         return id;
     }
@@ -59,12 +55,12 @@ public class JdbcUserDao implements UserDao {
                 users.add(user);
             }
         }catch (CannotGetJdbcConnectionException e){
-            System.out.println("Cannot connect to database!");
+            throw new RuntimeException("Unable to contact the database!", e);
         }catch (BadSqlGrammarException e){
-            System.out.println("Bad Query: " + e.getSql() +
-                    "\n"+e.getSQLException());
+            throw new RuntimeException("Bad SQL query: " + e.getSql()
+                    +"\n"+e.getSQLException(), e);
         }catch (DataIntegrityViolationException e){
-            System.out.println("Data Integrity Violation: " + e.getMessage());
+            throw new RuntimeException("Database Integrity Violation", e);
         }
 
         return users;
@@ -83,12 +79,12 @@ public class JdbcUserDao implements UserDao {
                 throw new UsernameNotFoundException("User " + username + " was not found.");
             }
         }catch (CannotGetJdbcConnectionException e){
-            System.out.println("Cannot connect to database!");
+            throw new RuntimeException("Unable to contact the database!", e);
         }catch (BadSqlGrammarException e){
-            System.out.println("Bad Query: " + e.getSql() +
-                    "\n"+e.getSQLException());
+            throw new RuntimeException("Bad SQL query: " + e.getSql()
+                    +"\n"+e.getSQLException(), e);
         }catch (DataIntegrityViolationException e){
-            System.out.println("Data Integrity Violation: " + e.getMessage());
+            throw new RuntimeException("Database Integrity Violation", e);
         }
 
         return user;
@@ -104,12 +100,12 @@ public class JdbcUserDao implements UserDao {
         try {
             newUserId = jdbcTemplate.queryForObject(sql, Integer.class, username, password_hash);
         }catch (CannotGetJdbcConnectionException e){
-            System.out.println("Cannot connect to database!");
+            throw new RuntimeException("Unable to contact the database!", e);
         }catch (BadSqlGrammarException e){
-            System.out.println("Bad Query: " + e.getSql() +
-                    "\n"+e.getSQLException());
+            throw new RuntimeException("Bad SQL query: " + e.getSql()
+                    +"\n"+e.getSQLException(), e);
         }catch (DataIntegrityViolationException e){
-            System.out.println("Data Integrity Violation: " + e.getMessage());
+            throw new RuntimeException("Database Integrity Violation", e);
         }
 
         // TODO: Create the account record with initial balance
@@ -136,12 +132,12 @@ public class JdbcUserDao implements UserDao {
                 otherUsers.add(otherUsername);
             }
         }catch (CannotGetJdbcConnectionException e){
-            System.out.println("Cannot connect to database!");
+            throw new RuntimeException("Unable to contact the database!", e);
         }catch (BadSqlGrammarException e){
-            System.out.println("Bad Query: " + e.getSql() +
-                    "\n"+e.getSQLException());
+            throw new RuntimeException("Bad SQL query: " + e.getSql()
+                    +"\n"+e.getSQLException(), e);
         }catch (DataIntegrityViolationException e){
-            System.out.println("Data Integrity Violation: " + e.getMessage());
+            throw new RuntimeException("Database Integrity Violation", e);
         }
         return otherUsers;
     }
