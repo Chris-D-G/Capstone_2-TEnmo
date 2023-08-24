@@ -52,8 +52,10 @@ public class AccountController {
         }
     }
 
+
+
     @RequestMapping(path = "/user/balances", method = RequestMethod.GET)
-    public List<Balance> getOtherUsernames(Principal principal){
+    public List<Balance> getBalancesByUsername(Principal principal){
         String username = principal.getName();
         return accountDao.getBalanceByUsername(username);
     }
