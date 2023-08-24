@@ -33,8 +33,9 @@ WHERE transfer_id = 3104;
 -- **************************************************************************************************
 --create transfer (easy way)
 INSERT INTO transfer(sender_account_id, receiver_account_id, approve_status, amount)
-VALUES(?,?,'*Pending*',?)RETURNING transfer_id;
+VALUES((SELECT account_id FROM account WHERE user_id = ?),(SELECT account_id FROM account WHERE user_id = ?),'*Pending*',?)RETURNING transfer_id;
 
+(SELECT account_id FROM account WHERE user_id = 1102)
 
 -- **************************************************************************************************
 -- create transfer (complicated way without user DAO and assumes one account per user...)

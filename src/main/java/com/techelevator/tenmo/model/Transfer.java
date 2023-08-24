@@ -2,6 +2,7 @@ package com.techelevator.tenmo.model;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 
 public class Transfer {
@@ -11,11 +12,13 @@ public class Transfer {
     @NotEmpty
     private int receiverAccountId;
     @NotNull
+    @Positive
     private BigDecimal amount;
-    private String status = "*Pending*";
+    private String status;
 
 
     public Transfer() {
+        this.status = "*Pending*";
     }
 
     public int getTransfer_id() {
