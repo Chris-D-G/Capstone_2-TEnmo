@@ -42,7 +42,7 @@ public class AccountController {
     public Account createAccount(@RequestBody @Valid Account account) {
         return accountDao.createAccount(account);
     }
-
+    //ToDo don't need to update accounts in controller only in transfer
     @RequestMapping(path = "/user/account", method = RequestMethod.PUT)
     public Account updateAccount(@RequestBody @Valid Account account) {
         try {
