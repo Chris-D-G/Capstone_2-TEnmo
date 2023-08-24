@@ -45,7 +45,7 @@ public class JdbcAccountDao implements AccountDao {
     @Override
     public List<Account> findByUsername(String username){
         List<Account> accountList = new ArrayList<>();
-        String sql = "SELECT balance FROM account " + //tenmo_user.username,
+        String sql = "SELECT account_id, balance, account.user_id FROM account " +
                 "   JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
                 "   WHERE tenmo_user.username = ?;";
 
@@ -178,8 +178,8 @@ public class JdbcAccountDao implements AccountDao {
 
     public Account mapRowToAccount(SqlRowSet row) {
         Account account = new Account();
-//        account.setAccountId(row.getInt("account_id"));
-//        account.setUserId(row.getInt("user_id"));
+        account.setAccountId(row.getInt("account_id"));
+        account.setUserId(row.getInt("user_id"));
         account.setBalance(row.getBigDecimal("balance"));
 
 
