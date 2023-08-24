@@ -100,21 +100,21 @@ public class JdbcTransferDao implements TransferDao {
     }
 
     @Override
-    public TransferJsonObject createTransfer(Transfer newTransfer) {
+    public TransferJsonObject createTransfer(Transfer newTransfer, int senderUserId, int receiverUserId) {
         /*
             --create transfer (easy way)
             INSERT INTO transfer(sender_account_id, receiver_account_id, approve_status, amount)
-            VALUES(?,?,'*Pending*',?)RETURNING transfer_id;
+            VALUES((SELECT account_id FROM account WHERE user_id = ?),(SELECT account_id FROM account WHERE user_id = ?),'*Pending*',?)RETURNING transfer_id;
          */
 
         TransferJsonObject createdTransfer = null;
         String sql = "INSERT INTO transfer(sender_account_id, receiver_account_id, approve_status, amount)\n" +
-                "VALUES(?,?,?,?)RETURNING transfer_id;";
+                     "VALUES((SELECT account_id FROM account WHERE user_id = ?),(SELECT account_id FROM account WHERE user_id = ?),?,?)RETURNING transfer_id;";
 
         try{
             int newTransferId = jdbcTemplate.queryForObject(sql,Integer.class,
-                                newTransfer.getSenderAccountId(),
-                                newTransfer.getReceiverAccountId(),
+                                senderUserId,
+                                receiverUserId,
                                 newTransfer.getStatus(),
                                 newTransfer.getAmount());
             if(newTransferId>0){

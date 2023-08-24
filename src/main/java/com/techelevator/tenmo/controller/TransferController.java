@@ -40,12 +40,12 @@ public class TransferController {
             //Create a new transfer object
             Transfer newTransfer = new Transfer();
             //Set the sender account id by using the user dao method and principal
-            newTransfer.setSenderAccountId(userDao.findIdByUsername(principal.getName()));
+            int senderUserId = userDao.findIdByUsername(principal.getName());
             //Set the receiver account id by using the user dao method and the transfer json object receiver name
-            newTransfer.setReceiverAccountId(userDao.findIdByUsername(transfer.getTo()));
+            int receiverUserId = userDao.findIdByUsername(transfer.getTo());
             //Set the transfer amount by using the transfer json object amount
             newTransfer.setAmount(transfer.getAmount());
-            return transferDao.createTransfer(newTransfer);
+            return transferDao.createTransfer(newTransfer,senderUserId,receiverUserId);
 
         }catch (RuntimeException e){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unable to Create Transfer!");

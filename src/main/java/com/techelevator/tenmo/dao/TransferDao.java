@@ -10,7 +10,7 @@ public interface TransferDao {
     List<TransferJsonObject> getTransfersByUsername(String username);
     TransferJsonObject getTransferByID(int id);
 
-    TransferJsonObject createTransfer(Transfer newTransfer);
+    TransferJsonObject createTransfer(Transfer newTransfer,int senderUserId, int receiverUserId);
 
     TransferJsonObject updateTransferStatus(String status, int id);
 
