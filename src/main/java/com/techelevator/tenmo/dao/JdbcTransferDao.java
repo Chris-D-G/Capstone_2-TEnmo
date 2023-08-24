@@ -241,7 +241,6 @@ public class JdbcTransferDao implements TransferDao {
             AND (sender_account_id=(SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)
             OR receiver_account_id = (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?))
             ORDER BY transfer_id;
-
          */
         String sql = "SELECT transfer_id,amount ,t1.username AS from,t2.username AS to\n" +
                      "FROM transfer\n" +

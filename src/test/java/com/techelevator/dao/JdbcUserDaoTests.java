@@ -62,36 +62,40 @@ public class JdbcUserDaoTests extends BaseDaoTests{
 
     @Test
     public void findOtherUsersTest() {
-        List<Username> expectedResult1 = new ArrayList<>();
-        List<Username> expectedResult2 = new ArrayList<>();
+        List<String> expectedResult1 = new ArrayList<>();
+        List<String> expectedResult2 = new ArrayList<>();
 
-        String username1 = USER_1.getUsername();
-        String username2 = USER_2.getUsername();
-        String username3 = USER_3.getUsername();
-        String username4 = USER_4.getUsername();
+        String username1 = USER_1.getUsername();  //kevin
+        String username2 = USER_2.getUsername();  //chris
+        String username3 = USER_3.getUsername();  //eric
+        String username4 = USER_4.getUsername();  //thwin
 
-        Username usernameJSON1 = new Username(username1);
-        Username usernameJSON2 = new Username(username2);
-        Username usernameJSON3 = new Username(username3);
-        Username usernameJSON4 = new Username(username4);
+        expectedResult1.add(username1);  // kevin
+        expectedResult1.add(username2);  // chris
+        expectedResult1.add(username3);  // eric
 
-        expectedResult1.add(usernameJSON1);
-        expectedResult1.add(usernameJSON2);
-        expectedResult1.add(usernameJSON3);
-
-        expectedResult2.add(usernameJSON2);
-        expectedResult2.add(usernameJSON3);
-        expectedResult2.add(usernameJSON4);
+        expectedResult2.add(username2);  // chris
+        expectedResult2.add(username3);  // eric
+        expectedResult2.add(username4);  // thwin
 
 
-        List<Username> actualResult1 = sut.findOtherUsers(username4);
-        List<Username> actualResult2 = sut.findOtherUsers(username1);
+        List<Username> usernameList1 = sut.findOtherUsers(username4);  //thwin
+        List<String> actualResult1 = new ArrayList<>();
+        actualResult1.add(usernameList1.get(0).getUsername()); // kevin
+        actualResult1.add(usernameList1.get(1).getUsername()); //chris
+        actualResult1.add(usernameList1.get(2).getUsername()); //eric
+
+
+        List<String> actualResult2 = new ArrayList<>();
+        List<Username> usernameList2 = sut.findOtherUsers(username1);  //kevin
+        actualResult2.add(usernameList2.get(0).getUsername());  //chris
+        actualResult2.add(usernameList2.get(1).getUsername());  //eric
+        actualResult2.add(usernameList2.get(2).getUsername());  //thwin
 
         Assert.assertEquals(expectedResult1, actualResult1);
         Assert.assertEquals(expectedResult2, actualResult2);
 
     }
-
 
 
 
