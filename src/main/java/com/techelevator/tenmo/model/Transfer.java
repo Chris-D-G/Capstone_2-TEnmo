@@ -7,16 +7,11 @@ import java.math.BigDecimal;
 public class Transfer {
     private int transfer_id;
     @NotEmpty
-    private int sender_id;
-
-    private String senderName;
+    private int senderAccountId;
     @NotEmpty
-    private int receiver_id;
-
-    private String receiverName;
+    private int receiverAccountId;
     @NotNull
     private BigDecimal amount;
-    @NotEmpty
     private String status = "*Pending*";
 
 
@@ -31,21 +26,6 @@ public class Transfer {
         this.transfer_id = transfer_id;
     }
 
-    public int getSender_id() {
-        return sender_id;
-    }
-
-    public void setSender_id(int sender_id) {
-        this.sender_id = sender_id;
-    }
-
-    public int getReceiver_id() {
-        return receiver_id;
-    }
-
-    public void setReceiver_id(int receiver_id) {
-        this.receiver_id = receiver_id;
-    }
 
     public BigDecimal getAmount() {
         return amount;
@@ -63,30 +43,28 @@ public class Transfer {
         this.status = status;
     }
 
-    public String getSenderName() {
-        return senderName;
+    public int getSenderAccountId() {
+        return senderAccountId;
     }
 
-    public void setSenderName(String senderName) {
-        this.senderName = senderName;
+    public void setSenderAccountId(int senderAccountId) {
+        this.senderAccountId = senderAccountId;
     }
 
-    public String getReceiverName() {
-        return receiverName;
+    public int getReceiverAccountId() {
+        return receiverAccountId;
     }
 
-    public void setReceiverName(String receiverName) {
-        this.receiverName = receiverName;
+    public void setReceiverAccountId(int receiverAccountId) {
+        this.receiverAccountId = receiverAccountId;
     }
 
     @Override
     public String toString() {
         return "Transfer{" +
                 "transfer_id=" + transfer_id +
-                ", sender_id=" + sender_id +
-                ", senderName='" + senderName + '\'' +
-                ", receiver_id=" + receiver_id +
-                ", receiverName='" + receiverName + '\'' +
+                ", senderAccountId=" + senderAccountId +
+                ", receiverAccountId=" + receiverAccountId +
                 ", amount=" + amount +
                 ", status='" + status + '\'' +
                 '}';
