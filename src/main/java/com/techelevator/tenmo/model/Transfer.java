@@ -16,6 +16,13 @@ public class Transfer {
     private BigDecimal amount;
     private String status;
 
+    public Transfer(int transfer_id, int senderAccountId, int receiverAccountId, BigDecimal amount, String status) {
+        this.transfer_id = transfer_id;
+        this.senderAccountId = senderAccountId;
+        this.receiverAccountId = receiverAccountId;
+        this.amount = amount;
+        this.status = status;
+    }
 
     public Transfer() {
         this.status = "*Pending*";

@@ -66,4 +66,31 @@ public class JdbcAccountDaoTest extends BaseDaoTests {
     }
 
 
+    @Test
+    public void createAccount() {
+    }
+
+    @Test
+    public void findByUsername() {
+    }
+
+    @Test
+    public void findAccountById() {
+    }
+
+    @Test
+    public void updateAccount() {
+    }
+
+    @Test
+    public void getBalanceByUsername() {
+    }
+
+    @Test
+    public void increaseBalance() {
+    }
+
+    @Test
+    public void decreaseBalance() {
+    }
 }
