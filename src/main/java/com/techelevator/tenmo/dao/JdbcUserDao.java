@@ -2,7 +2,11 @@ package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.User;
+import com.techelevator.tenmo.model.Username;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.BadSqlGrammarException;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,34 +29,69 @@ public class JdbcUserDao implements UserDao {
     @Override
     public int findIdByUsername(String username) {
         String sql = "SELECT user_id FROM tenmo_user WHERE username ILIKE ?;";
-        Integer id = jdbcTemplate.queryForObject(sql, Integer.class, username);
-        if (id != null) {
-            return id;
-        } else {
-            return -1;
+        Integer id = -1;
+        try{
+            id = jdbcTemplate.queryForObject(sql, Integer.class, username);
+            if (id != null) {
+                id = 0;
+            } else {
+                id = -1;
+            }
+        }catch (CannotGetJdbcConnectionException e){
+            System.out.println("Cannot connect to database!");
+        }catch (BadSqlGrammarException e){
+            System.out.println("Bad Query: " + e.getSql() +
+                    "\n"+e.getSQLException());
+        }catch (DataIntegrityViolationException e){
+            System.out.println("Data Integrity Violation: " + e.getMessage());
         }
+        return id;
     }
 
     @Override
     public List<User> findAll() {
         List<User> users = new ArrayList<>();
         String sql = "SELECT user_id, username, password_hash FROM tenmo_user;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
-        while(results.next()) {
-            User user = mapRowToUser(results);
-            users.add(user);
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+            while(results.next()) {
+                User user = mapRowToUser(results);
+                users.add(user);
+            }
+        }catch (CannotGetJdbcConnectionException e){
+            System.out.println("Cannot connect to database!");
+        }catch (BadSqlGrammarException e){
+            System.out.println("Bad Query: " + e.getSql() +
+                    "\n"+e.getSQLException());
+        }catch (DataIntegrityViolationException e){
+            System.out.println("Data Integrity Violation: " + e.getMessage());
         }
+
         return users;
     }
 
     @Override
     public User findByUsername(String username) throws UsernameNotFoundException {
         String sql = "SELECT user_id, username, password_hash FROM tenmo_user WHERE username ILIKE ?;";
-        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, username);
-        if (rowSet.next()){
-            return mapRowToUser(rowSet);
+        User user = null;
+
+        try {
+            SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, username);
+            if (rowSet.next()) {
+                user = mapRowToUser(rowSet);
+            } else {
+                throw new UsernameNotFoundException("User " + username + " was not found.");
+            }
+        }catch (CannotGetJdbcConnectionException e){
+            System.out.println("Cannot connect to database!");
+        }catch (BadSqlGrammarException e){
+            System.out.println("Bad Query: " + e.getSql() +
+                    "\n"+e.getSQLException());
+        }catch (DataIntegrityViolationException e){
+            System.out.println("Data Integrity Violation: " + e.getMessage());
         }
-        throw new UsernameNotFoundException("User " + username + " was not found.");
+
+        return user;
     }
 
     @Override
@@ -61,11 +100,16 @@ public class JdbcUserDao implements UserDao {
         // create user
         String sql = "INSERT INTO tenmo_user (username, password_hash) VALUES (?, ?) RETURNING user_id";
         String password_hash = new BCryptPasswordEncoder().encode(password);
-        Integer newUserId;
+        Integer newUserId = null;
         try {
             newUserId = jdbcTemplate.queryForObject(sql, Integer.class, username, password_hash);
-        } catch (DataAccessException e) {
-            return false;
+        }catch (CannotGetJdbcConnectionException e){
+            System.out.println("Cannot connect to database!");
+        }catch (BadSqlGrammarException e){
+            System.out.println("Bad Query: " + e.getSql() +
+                    "\n"+e.getSQLException());
+        }catch (DataIntegrityViolationException e){
+            System.out.println("Data Integrity Violation: " + e.getMessage());
         }
 
         // TODO: Create the account record with initial balance
@@ -81,12 +125,23 @@ public class JdbcUserDao implements UserDao {
     }
 
     @Override
-    public List<User> findOtherUsers(String username) {
-        List<User> otherUsers = new ArrayList<>();
-        String sql = "SELECT user_id, username, password_hash FROM tenmo_user WHERE username != ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql,username);
-        while(results.next()) {
-            otherUsers.add(mapRowToUser(results));
+    public List<Username> findOtherUsers(String username) {
+        List<Username> otherUsers = new ArrayList<>();
+        String sql = "SELECT username FROM tenmo_user WHERE username != ?;";
+        try{
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username);
+            while(results.next()) {
+                Username otherUsername = new Username();
+                otherUsername.setUsername(results.getString("username"));
+                otherUsers.add(otherUsername);
+            }
+        }catch (CannotGetJdbcConnectionException e){
+            System.out.println("Cannot connect to database!");
+        }catch (BadSqlGrammarException e){
+            System.out.println("Bad Query: " + e.getSql() +
+                    "\n"+e.getSQLException());
+        }catch (DataIntegrityViolationException e){
+            System.out.println("Data Integrity Violation: " + e.getMessage());
         }
         return otherUsers;
     }

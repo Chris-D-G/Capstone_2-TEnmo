@@ -3,6 +3,7 @@ package com.techelevator.tenmo.controller;
 import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.model.Account;
+import com.techelevator.tenmo.model.Balance;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +50,11 @@ public class AccountController {
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found.");
         }
+    }
+
+    @RequestMapping(path = "/user/balances", method = RequestMethod.GET)
+    public List<Balance> getOtherUsernames(Principal principal){
+        String username = principal.getName();
+        return accountDao.getBalanceByUsername(username);
     }
 }

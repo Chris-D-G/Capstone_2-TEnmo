@@ -2,6 +2,7 @@ package com.techelevator.tenmo.controller;
 
 import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.model.User;
+import com.techelevator.tenmo.model.Username;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,7 +21,7 @@ public class UserController {
     }
 
     @GetMapping(path = "users")
-    public List<User> getOtherUsers(Principal principal){
+    public List<Username> getOtherUsers(Principal principal){
         String username = principal.getName();
         return userDao.findOtherUsers(username);
 
