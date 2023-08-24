@@ -175,7 +175,8 @@ public class JdbcTransferDao implements TransferDao {
             WHERE account_id = 2001;
 
             COMMIT; */
-
+//  TODO: Check that SQL String works with BigDecimal as the parameter entry
+//  TODO: Check that we can have this as one SQL string as opposed to 2
         String sql= "START TRANSACTION;\n" +
                 "UPDATE account SET balance = balance-?\n" +
                 "WHERE account_id = ?;\n" +

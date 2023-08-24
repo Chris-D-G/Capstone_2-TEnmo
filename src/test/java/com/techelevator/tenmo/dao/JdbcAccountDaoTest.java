@@ -19,7 +19,7 @@ public class JdbcAccountDaoTest extends BaseDaoTests {
 
     private JdbcAccountDao sut;
     private static final Account ACCOUNT_1 = new Account(2101,1101,new BigDecimal("1000"));
-    private static final Account ACCOUNT_2 = new Account(2102,1102,new BigDecimal("2000")));
+    private static final Account ACCOUNT_2 = new Account(2102,1102,new BigDecimal("2000"));
     private static final Account ACCOUNT_3 = new Account(2103,1103,new BigDecimal("3000"));
     private static final Account ACCOUNT_4 = new Account(2104,1104,new BigDecimal("4000"));
 
