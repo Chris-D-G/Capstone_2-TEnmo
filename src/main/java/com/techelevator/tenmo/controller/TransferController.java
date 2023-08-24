@@ -3,9 +3,8 @@ package com.techelevator.tenmo.controller;
 import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.TransferDao;
 import com.techelevator.tenmo.dao.UserDao;
-import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfer;
-import com.techelevator.tenmo.model.TransferJsonObject;
+import com.techelevator.tenmo.model.TransferDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -39,15 +38,24 @@ public class TransferController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "user/transfer")
-    public TransferJsonObject createTransfer(@RequestBody @Valid TransferJsonObject transfer, Principal principal) {
+    public TransferDTO createTransfer(@RequestBody @Valid TransferDTO transfer, Principal principal) {
         try{
+            int senderUserId;
+            int receiverUserId;
+            if(!transfer.getTo().equals(principal.getName())){
+                //Set the sender account id by using the user dao method and principal
+                senderUserId = userDao.findIdByUsername(principal.getName());
+                //Set the receiver account id by using the user dao method and the transfer json object receiver name
+                receiverUserId = userDao.findIdByUsername(transfer.getTo());
+            }else{
+                //Set the sender account id by using the user dao method and the transfer json object receiver name
+                senderUserId  = userDao.findIdByUsername(transfer.getTo());
+                //Set the receiver account id by using the user dao method and principal
+                receiverUserId= userDao.findIdByUsername(principal.getName());
+            }
             //Create a new transfer object
             Transfer newTransfer = new Transfer();
-            //Set the sender account id by using the user dao method and principal
-            int senderUserId = userDao.findIdByUsername(principal.getName());
-            //Set the receiver account id by using the user dao method and the transfer json object receiver name
-            int receiverUserId = userDao.findIdByUsername(transfer.getTo());
-
+            //Check to see if the sender and receiver IDs match
             if(senderUserId!=receiverUserId){
                 //Set the transfer amount by using the transfer json object amount
                 newTransfer.setAmount(transfer.getAmount());
@@ -64,34 +72,47 @@ public class TransferController {
     }
 
     @GetMapping(path = "user/transfer/history")
-    public List<TransferJsonObject> getTransfers(Principal principal) {
+    public List<TransferDTO> getAllTransfers(Principal principal) {
         //Extract username from logged in user
         String username = principal.getName();
         try{
             //returns a list of the JSON formatted object
-            return transferDao.getTransfersByUsername(username);
+            return transferDao.getTransferDTOsByUsername(username);
         }catch (RuntimeException e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Unable to find transfer history!");
         }
     }
+    @GetMapping(path = "user/transfer/pending")
+    public List<TransferDTO> getAllPendingTransfers(Principal principal){
+        //Extract username from logged in user
+        String username = principal.getName();
+        try{
+            //returns a list of the JSON formatted object
+            return transferDao.getPendingDTOs(username);
+        }catch (RuntimeException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No pending transfers found!");
+        }
+    }
+
 
     @GetMapping(path = "user/transfer/{id}")
-    public TransferJsonObject getTransferJsonObjectById(@PathVariable int id){
+    public TransferDTO getTransferJsonObjectById(@PathVariable int id){
         try{
             //return a JSON object with the necessary information
-            return transferDao.getTransferJsonByID(id);
+            return transferDao.getTransferDTOByID(id);
         }catch (RuntimeException e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Unable to find specified transfer!");
         }
     }
 
-    /*For an approved request it must check the requirements of
+
+    public void attemptTransaction(int transferId){
+         /*For an approved request it must check the requirements of
             The receiver's account balance is increased by the amount of the transfer.
             The sender's account balance is decreased by the amount of the transfer.
             I can't send more TE Bucks than I have in my account.
-            I can't send a zero or negative amount.
-     */
-    public void attemptTransaction(int transferId){
+            I can't send a zero or negative amount.*/
+
         //pull the pending transfer from the database
         Transfer pendingTransfer = transferDao.getTransferByID(transferId);
         // get the sender account id from the transfer
@@ -120,10 +141,6 @@ public class TransferController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request");
 
         }
-
-
-
-
     }
 
 }

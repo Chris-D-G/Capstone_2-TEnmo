@@ -1,6 +1,6 @@
 package com.techelevator.tenmo.dao;
 import com.techelevator.tenmo.model.Transfer;
-import com.techelevator.tenmo.model.TransferJsonObject;
+import com.techelevator.tenmo.model.TransferDTO;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
@@ -21,7 +21,7 @@ public class JdbcTransferDao implements TransferDao {
     }
 
     @Override
-    public List<TransferJsonObject> getTransfersByUsername(String username) {
+    public List<TransferDTO> getTransferDTOsByUsername(String username) {
         /*  ---Return all transfers associated with the logged in user---
             SELECT transfer_id,amount ,t1.username AS from,t2.username AS to
             FROM transfer
@@ -40,14 +40,15 @@ public class JdbcTransferDao implements TransferDao {
                     "JOIN account AS a2 ON transfer.receiver_account_id = a2.account_id\n" +
                     "JOIN tenmo_user AS t1 on a1.user_id = t1.user_id\n" +
                     "JOIN tenmo_user AS t2 on a2.user_id = t2.user_id\n" +
+
                     "WHERE sender_account_id=(SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
                     "OR receiver_account_id = (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
                     "ORDER BY transfer_id;";
-        List<TransferJsonObject> returnedTransfers = new ArrayList<>();
+        List<TransferDTO> returnedTransferDTOs = new ArrayList<>();
         try{
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql,username,username);
             while(results.next()){
-                returnedTransfers.add(mapSqlRowsetToJsonObject(results));
+                returnedTransferDTOs.add(mapSqlRowsetToDTO(results));
             }
 
         }catch (CannotGetJdbcConnectionException e){
@@ -58,12 +59,12 @@ public class JdbcTransferDao implements TransferDao {
         }catch (DataIntegrityViolationException e){
             throw new RuntimeException("Database Integrity Violation", e);
         }
-        return returnedTransfers;
+        return returnedTransferDTOs;
     }
 
 
     @Override
-    public TransferJsonObject getTransferJsonByID(int id) {
+    public TransferDTO getTransferDTOByID(int id) {
         /*  -- Return transfer by specific transfer ID
             SELECT transfer_id,amount ,t1.username AS from,t2.username AS to
             FROM transfer
@@ -83,12 +84,12 @@ public class JdbcTransferDao implements TransferDao {
                      "WHERE transfer_id = ?;";
 
         //create object to return and set to null
-        TransferJsonObject returnedTransfer = null;
+        TransferDTO returnedTransferDTO = null;
 
         try{
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql,id);
             if(results.next()){
-                returnedTransfer = mapSqlRowsetToJsonObject(results);
+                returnedTransferDTO = mapSqlRowsetToDTO(results);
             }
         }catch (CannotGetJdbcConnectionException e){
             throw new RuntimeException("Unable to contact the database!", e);
@@ -98,17 +99,17 @@ public class JdbcTransferDao implements TransferDao {
         }catch (DataIntegrityViolationException e){
             throw new RuntimeException("Database Integrity Violation", e);
         }
-        return returnedTransfer;
+        return returnedTransferDTO;
     }
 
     @Override
-    public TransferJsonObject createTransfer(Transfer newTransfer, int senderUserId, int receiverUserId) {
+    public TransferDTO createTransfer(Transfer newTransfer, int senderUserId, int receiverUserId) {
         /*
             --create transfer (easy way)
             INSERT INTO transfer(sender_account_id, receiver_account_id, approve_status, amount)
             VALUES((SELECT account_id FROM account WHERE user_id = ?),(SELECT account_id FROM account WHERE user_id = ?),'*Pending*',?)RETURNING transfer_id;
          */
-        TransferJsonObject createdTransfer = null;
+        TransferDTO createdTransferDTO = null;
         String sql = "INSERT INTO transfer(sender_account_id, receiver_account_id, approve_status, amount)\n" +
                      "VALUES((SELECT account_id FROM account WHERE user_id = ?),(SELECT account_id FROM account WHERE user_id = ?),?,?)RETURNING transfer_id;";
 
@@ -119,7 +120,7 @@ public class JdbcTransferDao implements TransferDao {
                                 newTransfer.getStatus(),
                                 newTransfer.getAmount());
             if(newTransferId>0){
-                createdTransfer = getTransferJsonByID(newTransferId);
+                createdTransferDTO = getTransferDTOByID(newTransferId);
             }
         }catch (CannotGetJdbcConnectionException e){
             throw new RuntimeException("Unable to contact the database!", e);
@@ -131,11 +132,11 @@ public class JdbcTransferDao implements TransferDao {
         }catch (NullPointerException e){
             throw new RuntimeException("Null value returned", e);
         }
-        return createdTransfer;
+        return createdTransferDTO;
     }
 
     @Override
-    public TransferJsonObject updateTransferStatus(String status, int id) {
+    public TransferDTO updateTransferStatus(String status, int id) {
         /*  -- update transfer Status using id
             UPDATE transfer SET approve_status = ?
             WHERE transfer_id = ?;
@@ -143,12 +144,12 @@ public class JdbcTransferDao implements TransferDao {
         String sql = "UPDATE transfer SET approve_status = ?\n" +
                      "WHERE transfer_id = ?;";
 
-        TransferJsonObject updatedTransfer = null;
+        TransferDTO updatedTransferDTO = null;
 
         try{
             int updatedRows = jdbcTemplate.update(sql,status,id);
             if(updatedRows>0){
-                updatedTransfer = getTransferJsonByID(id);
+                updatedTransferDTO = getTransferDTOByID(id);
             }
         }catch (CannotGetJdbcConnectionException e){
             throw new RuntimeException("Unable to contact the database!", e);
@@ -159,7 +160,7 @@ public class JdbcTransferDao implements TransferDao {
             throw new RuntimeException("Database Integrity Violation", e);
         }
 
-        return updatedTransfer;
+        return updatedTransferDTO;
     }
 
 
@@ -226,11 +227,51 @@ public class JdbcTransferDao implements TransferDao {
         return retreivedTransfer;
     }
 
+    @Override
+    public List<TransferDTO> getPendingDTOs(String username) {
+        List<TransferDTO> pendingTransferDTOs = new ArrayList<>();
+        /*  -- Return all pending transfers associated with the logged in user
+            SELECT transfer_id,amount ,t1.username AS from,t2.username AS to
+            FROM transfer
+            JOIN account AS a1 ON transfer.sender_account_id = a1.account_id
+            JOIN account AS a2 ON transfer.receiver_account_id = a2.account_id
+            JOIN tenmo_user AS t1 on a1.user_id = t1.user_id
+            JOIN tenmo_user AS t2 on a2.user_id = t2.user_id
+            WHERE approve_status ILIKE '%pending%'
+            AND (sender_account_id=(SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)
+            OR receiver_account_id = (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?))
+            ORDER BY transfer_id;
 
+         */
+        String sql = "SELECT transfer_id,amount ,t1.username AS from,t2.username AS to\n" +
+                     "FROM transfer\n" +
+                     "JOIN account AS a1 ON transfer.sender_account_id = a1.account_id\n" +
+                     "JOIN account AS a2 ON transfer.receiver_account_id = a2.account_id\n" +
+                     "JOIN tenmo_user AS t1 on a1.user_id = t1.user_id\n" +
+                     "JOIN tenmo_user AS t2 on a2.user_id = t2.user_id\n" +
+                     "WHERE approve_status ILIKE '%pending%'\n" +
+                     "AND (sender_account_id=(SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
+                     "OR receiver_account_id = (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?))\n" +
+                     "ORDER BY transfer_id;";
+        try{
+            SqlRowSet results= jdbcTemplate.queryForRowSet(sql,username,username);
+            while(results.next()){
+                pendingTransferDTOs.add(mapSqlRowsetToDTO(results));
+            }
+        }catch (CannotGetJdbcConnectionException e){
+            System.out.println("Cannot connect to database!");
+        }catch (BadSqlGrammarException e){
+            System.out.println("Bad Query: " + e.getSql() +
+                    "\n"+e.getSQLException());
+        }catch (DataIntegrityViolationException e){
+            System.out.println("Data Integrity Violation" + e.getMessage());
+        }
 
+        return pendingTransferDTOs;
+    }
 
-    private TransferJsonObject mapSqlRowsetToJsonObject (SqlRowSet results){
-        TransferJsonObject mappedOutput = new TransferJsonObject();
+    private TransferDTO mapSqlRowsetToDTO(SqlRowSet results){
+        TransferDTO mappedOutput = new TransferDTO();
 
         mappedOutput.setTransferId(results.getInt("transfer_id"));
         mappedOutput.setAmount(results.getBigDecimal("amount"));

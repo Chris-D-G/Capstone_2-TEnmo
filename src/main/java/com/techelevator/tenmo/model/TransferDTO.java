@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 
-public class TransferJsonObject {
+public class TransferDTO {
 
     private int transferId;
     @NotNull
@@ -17,7 +17,7 @@ public class TransferJsonObject {
     private String to;
 
 
-    public TransferJsonObject() {
+    public TransferDTO() {
     }
 
     public int getTransferId() {
