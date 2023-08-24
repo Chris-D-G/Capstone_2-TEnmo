@@ -1,17 +1,18 @@
 package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.model.Transfer;
+import com.techelevator.tenmo.model.TransferJsonObject;
 
 import java.util.List;
 
 public interface TransferDao {
 
-    List<Transfer> getTransfersByUsername(String username);
-    Transfer getTransferByID(int id);
+    List<TransferJsonObject> getTransfersByUsername(String username);
+    TransferJsonObject getTransferByID(int id);
 
-    Transfer createTransfer(Transfer newTransfer);
+    TransferJsonObject createTransfer(Transfer newTransfer);
 
-    Transfer updateTransferStatus(String status, int id);
+    TransferJsonObject updateTransferStatus(String status, int id);
 
 
 
