@@ -9,6 +9,11 @@ public class Balance {
     public Balance() {
     }
 
+    public Balance(String username, BigDecimal balance) {
+        this.username = username;
+        this.balance = balance;
+    }
+
     public String getUsername() {
         return username;
     }

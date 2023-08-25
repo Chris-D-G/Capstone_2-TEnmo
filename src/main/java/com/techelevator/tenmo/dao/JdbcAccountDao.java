@@ -17,14 +17,14 @@ import java.util.List;
 
 @Component
 public class JdbcAccountDao implements AccountDao {
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
     public JdbcAccountDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
     public Account createAccount(Account account) {
-        Account createdAccount = new Account();
+        Account createdAccount = null;
         String sql = "INSERT INTO account (balance, user_id) " +
                 "VALUES (?, ?) RETURNING account_id;";
 
@@ -91,6 +91,7 @@ public class JdbcAccountDao implements AccountDao {
         return account;
     }
 
+    //ToDO: probably dont need this. Maybe rename to withdraw from account?
     @Override
     public Account updateAccount(int accountId, BigDecimal balance) {
         Account account = null;
@@ -133,48 +134,48 @@ public class JdbcAccountDao implements AccountDao {
         return userBalances;
 
     }
-
-    @Override
-    public Account increaseBalance(Account account, String amount) {
-        String sql = "UPDATE account SET balance = ? WHERE account_id = ?;";
-        BigDecimal currentBalance = account.getBalance();
-        BigDecimal transferAmount = new BigDecimal(amount);
-
-        BigDecimal newBalance = currentBalance.add(transferAmount);
-        try {
-            jdbcTemplate.update(sql, newBalance, account.getAccountId());
-        }catch (CannotGetJdbcConnectionException e){
-            throw new RuntimeException("Unable to contact the database!", e);
-        }catch (BadSqlGrammarException e){
-            throw new RuntimeException("Bad SQL query: " + e.getSql()
-                    +"\n"+e.getSQLException(), e);
-        }catch (DataIntegrityViolationException e){
-            throw new RuntimeException("Database Integrity Violation", e);
-        }
-
-        return findAccountById(account.getAccountId());
-    }
-
-    @Override
-    public Account decreaseBalance(Account account, String amount) {
-        String sql = "UPDATE account SET balance = ? WHERE account_id = ?;";
-        BigDecimal currentBalance = account.getBalance();
-        BigDecimal transferAmount = new BigDecimal(amount);
-
-        BigDecimal newBalance = currentBalance.subtract(transferAmount);
-        try {
-            jdbcTemplate.update(sql, newBalance, account.getAccountId());
-        }catch (CannotGetJdbcConnectionException e){
-            throw new RuntimeException("Unable to contact the database!", e);
-        }catch (BadSqlGrammarException e){
-            throw new RuntimeException("Bad SQL query: " + e.getSql()
-                    +"\n"+e.getSQLException(), e);
-        }catch (DataIntegrityViolationException e){
-            throw new RuntimeException("Database Integrity Violation", e);
-        }
-
-        return findAccountById(account.getAccountId());
-    }
+    //ToDO determine if the increase and decrease methods are necessary
+//    @Override
+//    public Account increaseBalance(Account account, String amount) {
+//        String sql = "UPDATE account SET balance = ? WHERE account_id = ?;";
+//        BigDecimal currentBalance = account.getBalance();
+//        BigDecimal transferAmount = new BigDecimal(amount);
+//
+//        BigDecimal newBalance = currentBalance.add(transferAmount);
+//        try {
+//            jdbcTemplate.update(sql, newBalance, account.getAccountId());
+//        }catch (CannotGetJdbcConnectionException e){
+//            throw new RuntimeException("Unable to contact the database!", e);
+//        }catch (BadSqlGrammarException e){
+//            throw new RuntimeException("Bad SQL query: " + e.getSql()
+//                    +"\n"+e.getSQLException(), e);
+//        }catch (DataIntegrityViolationException e){
+//            throw new RuntimeException("Database Integrity Violation", e);
+//        }
+//
+//        return findAccountById(account.getAccountId());
+//    }
+//
+//    @Override
+//    public Account decreaseBalance(Account account, String amount) {
+//        String sql = "UPDATE account SET balance = ? WHERE account_id = ?;";
+//        BigDecimal currentBalance = account.getBalance();
+//        BigDecimal transferAmount = new BigDecimal(amount);
+//
+//        BigDecimal newBalance = currentBalance.subtract(transferAmount);
+//        try {
+//            jdbcTemplate.update(sql, newBalance, account.getAccountId());
+//        }catch (CannotGetJdbcConnectionException e){
+//            throw new RuntimeException("Unable to contact the database!", e);
+//        }catch (BadSqlGrammarException e){
+//            throw new RuntimeException("Bad SQL query: " + e.getSql()
+//                    +"\n"+e.getSQLException(), e);
+//        }catch (DataIntegrityViolationException e){
+//            throw new RuntimeException("Database Integrity Violation", e);
+//        }
+//
+//        return findAccountById(account.getAccountId());
+//    }
 
     public Account mapRowToAccount(SqlRowSet row) {
         Account account = new Account();

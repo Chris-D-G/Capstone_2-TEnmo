@@ -43,11 +43,13 @@ public class TransferController {
             int senderUserId;
             int receiverUserId;
             if(!transfer.getTo().equals(principal.getName())){
+                //This is the user sending money to another user
                 //Set the sender account id by using the user dao method and principal
                 senderUserId = userDao.findIdByUsername(principal.getName());
                 //Set the receiver account id by using the user dao method and the transfer json object receiver name
                 receiverUserId = userDao.findIdByUsername(transfer.getTo());
             }else{
+                // This the user making a request from another user
                 //Set the sender account id by using the user dao method and the transfer json object receiver name
                 senderUserId  = userDao.findIdByUsername(transfer.getTo());
                 //Set the receiver account id by using the user dao method and principal
@@ -105,42 +107,51 @@ public class TransferController {
         }
     }
 
-
-    public void attemptTransaction(int transferId){
+    @PutMapping(path = "user/transfer/{id}")
+    public void attemptTransaction(@PathVariable int transferId,String senderApproval, @RequestBody @Valid TransferDTO transfer, Principal principal){
          /*For an approved request it must check the requirements of
             The receiver's account balance is increased by the amount of the transfer.
             The sender's account balance is decreased by the amount of the transfer.
             I can't send more TE Bucks than I have in my account.
             I can't send a zero or negative amount.*/
+        String senderName = transfer.getFrom();
 
-        //pull the pending transfer from the database
-        Transfer pendingTransfer = transferDao.getTransferByID(transferId);
-        // get the sender account id from the transfer
-        int senderAccountId = pendingTransfer.getSenderAccountId();
-        // get the receiver account id from the transfer
-        int receiverAccountID = pendingTransfer.getReceiverAccountId();
-        // get the pending transfer amount from the transfer
-        BigDecimal pendingTransferAmount = pendingTransfer.getAmount();
-        // get the balance of the sender by looking up the account id
-        BigDecimal senderBalance = accountDao.findAccountById(senderAccountId).getBalance();
-        // check senderBalance >0
-        int checkPositiveBalance = pendingTransferAmount.compareTo(new BigDecimal("0"));
-        // check pending amount is less than sender balance
-        int checkTransferLessThanBalance = pendingTransferAmount.compareTo(senderBalance);
-        if(checkPositiveBalance > 0 && checkTransferLessThanBalance <= 0){ //ADD approval from user
-            //proceed by creating a transaction that adds money to receiver and subtracts from sender
-            //BigDecimal amount, int senderAccountId, int receiverAccountId
-            transferDao.completeTransaction(pendingTransferAmount,senderAccountId,receiverAccountID);
-            transferDao.updateTransferStatus("*Approved",transferId);
+        if(principal.getName().equals(senderName) && senderApproval.equals("Approve")){
+            //pull the pending transfer from the database
+            Transfer pendingTransfer = transferDao.getTransferByID(transferId);
+            // get the sender account id from the transfer
+            int senderAccountId = pendingTransfer.getSenderAccountId();
+            // get the receiver account id from the transfer
+            int receiverAccountID = pendingTransfer.getReceiverAccountId();
+            // get the pending transfer amount from the transfer
+            BigDecimal pendingTransferAmount = pendingTransfer.getAmount();
+            // get the balance of the sender by looking up the account id
+            BigDecimal senderBalance = accountDao.findAccountById(senderAccountId).getBalance();
+            // check senderBalance >0
+            int checkPositiveBalance = pendingTransferAmount.compareTo(new BigDecimal("0"));
+            // check pending amount is less than sender balance
+            int checkTransferLessThanBalance = pendingTransferAmount.compareTo(senderBalance);
+            if(checkPositiveBalance > 0 && checkTransferLessThanBalance <= 0){ //ADD approval from user
+                //proceed by creating a transaction that adds money to receiver and subtracts from sender
+                //BigDecimal amount, int senderAccountId, int receiverAccountId
+                transferDao.completeTransaction(pendingTransferAmount,senderAccountId,receiverAccountID);
+                transferDao.updateTransferStatus("*Approved",transferId);
 
-        }else{
-            // if approval is not granted or the conditions are not met
-            transferDao.updateTransferStatus("*Rejected",transferId);
+            }else{
+                // if the conditions are not met
+                transferDao.updateTransferStatus("*Rejected",transferId);
 
-            //error message
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request");
+                //error message
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request");
 
+            }
         }
+
+
+
+
     }
+
+
 
 }
