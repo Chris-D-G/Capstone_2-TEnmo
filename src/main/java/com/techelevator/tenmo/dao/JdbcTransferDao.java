@@ -1,5 +1,6 @@
 package com.techelevator.tenmo.dao;
 import com.techelevator.tenmo.model.Transfer;
+import com.techelevator.tenmo.model.TransferApprovalDTO;
 import com.techelevator.tenmo.model.TransferDTO;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.BadSqlGrammarException;
@@ -7,6 +8,7 @@ import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -163,42 +165,6 @@ public class JdbcTransferDao implements TransferDao {
         return updatedTransferDTO;
     }
 
-
-    @Override
-    public void completeTransaction(BigDecimal amount, int senderAccountId, int receiverAccountId) {
-        /*  START TRANSACTION;
-
-            UPDATE account SET balance = balance-500
-            WHERE account_id = 2101;
-
-            UPDATE account SET balance = balance + 500
-            WHERE account_id = 2001;
-
-            COMMIT; */
-//  TODO: Check that SQL String works with BigDecimal as the parameter entry
-//  TODO: Check that we can have this as one SQL string as opposed to 2
-        String sql= "START TRANSACTION;\n" +
-                "UPDATE account SET balance = balance-?\n" +
-                "WHERE account_id = ?;\n" +
-
-                "UPDATE account SET balance = balance + ?\n" +
-                "WHERE account_id = ?;" +
-                "COMMIT;";
-        try {
-            //This will update both the sender and receiver accounts with the valid amount
-            jdbcTemplate.update(sql, int.class, amount, senderAccountId, amount, receiverAccountId);
-
-        }catch (CannotGetJdbcConnectionException e){
-            throw new RuntimeException("Unable to contact the database!", e);
-        }catch (BadSqlGrammarException e){
-            throw new RuntimeException("Bad SQL query: " + e.getSql()
-                    +"\n"+e.getSQLException(), e);
-        }catch (DataIntegrityViolationException e){
-            throw new RuntimeException("Database Integrity Violation", e);
-        }
-
-    }
-
         @Override
     public Transfer getTransferByID(int id) {
         Transfer retreivedTransfer = null;
@@ -223,7 +189,6 @@ public class JdbcTransferDao implements TransferDao {
         }catch (DataIntegrityViolationException e){
             System.out.println("Data Integrity Violation" + e.getMessage());
         }
-
 
         return retreivedTransfer;
     }
@@ -270,15 +235,68 @@ public class JdbcTransferDao implements TransferDao {
         return pendingTransferDTOs;
     }
 
+    @Override
+    @Transactional
+    public TransferApprovalDTO completeTransaction(Transfer pendingTransfer) {
+
+        String sql1 = "UPDATE account SET balance = balance-?\n" +
+                     "WHERE account_id = ?;";
+
+        String sql2 = "UPDATE account SET balance = balance + ?\n" +
+                     "WHERE account_id = ?;";
+
+        try{
+            // process the decrement
+            int decrementedRowCount = jdbcTemplate.update(sql1, int.class, pendingTransfer.getAmount(), pendingTransfer.getSenderAccountId());
+            // check to see if valid update was performed
+            if(decrementedRowCount ==0 ){
+                throw new RuntimeException("Expected an updated row. None were updated");
+            }else if(decrementedRowCount >1){
+                throw new RuntimeException("More than 1 row was updated.");
+            }else{
+
+            }
+            //process the increment
+            int incrementedRowCount = jdbcTemplate.update(sql2,int.class,pendingTransfer.getAmount(),pendingTransfer.getReceiverAccountId());
+            //check to see if valid update was performed
+            if(incrementedRowCount ==0){
+                throw new RuntimeException("Expected an updated row. None were updated");
+            }else if(incrementedRowCount >1){
+                throw new RuntimeException("More than 1 row was updated.");}
+
+        }catch (CannotGetJdbcConnectionException e){
+            throw new RuntimeException("Unable to contact the database!", e);
+        }catch (BadSqlGrammarException e){
+            throw new RuntimeException("Bad SQL query: " + e.getSql()
+                    +"\n"+e.getSQLException(), e);
+        }catch (DataIntegrityViolationException e){
+            throw new RuntimeException("Database Integrity Violation", e);
+        }
+        //If successful updates are performed update the status of the associated transfer
+        updateTransferStatus("*Approved",pendingTransfer.getTransfer_id());
+        TransferDTO current = getTransferDTOByID(pendingTransfer.getTransfer_id());
+        TransferApprovalDTO  updatedApprovalDTO = new TransferApprovalDTO();
+        updatedApprovalDTO.setTransferId(pendingTransfer.getTransfer_id());
+        updatedApprovalDTO.setAmount(pendingTransfer.getAmount());
+        updatedApprovalDTO.setStatus(pendingTransfer.getStatus());
+        updatedApprovalDTO.setApprove(true);
+        updatedApprovalDTO.setFrom(updatedApprovalDTO.getFrom());
+        updatedApprovalDTO.setTo(updatedApprovalDTO.getTo());
+
+        return updatedApprovalDTO;
+    }
+
+
+
     private TransferDTO mapSqlRowsetToDTO(SqlRowSet results){
-        TransferDTO mappedOutput = new TransferDTO();
+        TransferDTO mappedTransferDTO = new TransferDTO();
 
-        mappedOutput.setTransferId(results.getInt("transfer_id"));
-        mappedOutput.setAmount(results.getBigDecimal("amount"));
-        mappedOutput.setFrom(results.getString("from"));
-        mappedOutput.setTo(results.getString("to"));
+        mappedTransferDTO.setTransferId(results.getInt("transfer_id"));
+        mappedTransferDTO.setAmount(results.getBigDecimal("amount"));
+        mappedTransferDTO.setFrom(results.getString("from"));
+        mappedTransferDTO.setTo(results.getString("to"));
 
-        return mappedOutput;
+        return mappedTransferDTO;
     }
 
     private Transfer mapRowSetToTransfer (SqlRowSet results){
@@ -291,6 +309,15 @@ public class JdbcTransferDao implements TransferDao {
         return  mappedTransfer;
     }
 
+    private TransferApprovalDTO mapRowSetToApprovalDTO (SqlRowSet results){
+        TransferApprovalDTO mappedApprovalDTO = new TransferApprovalDTO();
+        mappedApprovalDTO.setTransferId(results.getInt("transfer_id"));
+        mappedApprovalDTO.setAmount(results.getBigDecimal("amount"));
+        mappedApprovalDTO.setFrom(results.getString("from"));
+        mappedApprovalDTO.setTo(results.getString("to"));
+        mappedApprovalDTO.setStatus(results.getString("approve_status"));
+        return mappedApprovalDTO;
+    }
 
 
 }

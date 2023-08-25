@@ -1,6 +1,7 @@
 package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.model.Transfer;
+import com.techelevator.tenmo.model.TransferApprovalDTO;
 import com.techelevator.tenmo.model.TransferDTO;
 
 import java.math.BigDecimal;
@@ -17,7 +18,7 @@ public interface TransferDao {
 
     TransferDTO updateTransferStatus(String status, int id);
 
-    void completeTransaction(BigDecimal amount, int senderAccountId, int receiverAccountId);
+    TransferApprovalDTO completeTransaction(Transfer pendingTransfer); //BigDecimal amount, int senderAccountId, int receiverAccountId
 
     List<TransferDTO> getPendingDTOs (String username);
 

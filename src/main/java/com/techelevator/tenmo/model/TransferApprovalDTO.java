@@ -6,7 +6,7 @@ import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 
 public class TransferApprovalDTO {
-
+    @NotEmpty
     private int transferId;
     @NotNull
     @Positive
@@ -20,5 +20,75 @@ public class TransferApprovalDTO {
 
     private String status;
 
+    public TransferApprovalDTO() {
+    }
 
+    public TransferApprovalDTO(int transferId, BigDecimal amount, String from, String to, boolean approve, String status) {
+        this.transferId = transferId;
+        this.amount = amount;
+        this.from = from;
+        this.to = to;
+        this.approve = approve;
+        this.status = status;
+    }
+
+    public int getTransferId() {
+        return transferId;
+    }
+
+    public void setTransferId(int transferId) {
+        this.transferId = transferId;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
+    }
+
+    public String getTo() {
+        return to;
+    }
+
+    public void setTo(String to) {
+        this.to = to;
+    }
+
+    public boolean isApprove() {
+        return approve;
+    }
+
+    public void setApprove(boolean approve) {
+        this.approve = approve;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "TransferApprovalDTO{" +
+                "transferId=" + transferId +
+                ", amount=" + amount +
+                ", from='" + from + '\'' +
+                ", to='" + to + '\'' +
+                ", approve=" + approve +
+                ", status='" + status + '\'' +
+                '}';
+    }
 }
