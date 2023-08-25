@@ -34,8 +34,10 @@ public class JdbcAccountDaoTest extends BaseDaoTests {
 
 
     private JdbcAccountDao sut;
+
     private JdbcTemplate jdbcTemplate;
     private Account testAccount;
+
 
     @Before
     public void setup() {

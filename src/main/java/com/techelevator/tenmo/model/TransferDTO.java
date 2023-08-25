@@ -20,6 +20,13 @@ public class TransferDTO {
     public TransferDTO() {
     }
 
+    public TransferDTO(int transferId, BigDecimal amount, String from, String to) {
+        this.transferId = transferId;
+        this.amount = amount;
+        this.from = from;
+        this.to = to;
+    }
+
     public int getTransferId() {
         return transferId;
     }

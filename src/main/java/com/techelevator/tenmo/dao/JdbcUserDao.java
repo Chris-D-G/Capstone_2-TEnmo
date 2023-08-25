@@ -123,7 +123,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public List<Username> findOtherUsers(String username) {
         List<Username> otherUsers = new ArrayList<>();
-        String sql = "SELECT username FROM tenmo_user WHERE username != ?;";
+        String sql = "SELECT username FROM tenmo_user WHERE username != ? ORDER BY user_id;";
         try{
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username);
             while(results.next()) {
