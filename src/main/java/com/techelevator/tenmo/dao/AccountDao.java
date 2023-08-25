@@ -15,10 +15,4 @@ public interface AccountDao {
     Account updateAccount(int accountId, BigDecimal balance); //tested
     List<Balance> getBalanceByUsername(String username);
 
-
-
-    //ToDO determine if these methods are necessary
-//    Account increaseBalance(Account account, String amount);
-//    Account decreaseBalance(Account account, String amount);
-
 }

@@ -11,8 +11,6 @@ public class Account {
     private int userId;
     @NotBlank
     private BigDecimal balance = new BigDecimal("1000.00");
-    //ToDo:  implement default balance in createAccount method in Account controller
-
 
     public Account() {
     }

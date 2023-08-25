@@ -40,6 +40,7 @@ public class TransferController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "user/transfer")
     public TransferDTO createTransfer(@RequestBody @Valid TransferDTO transfer, Principal principal) {
+        //ToDO need to implement account selection
         try{
             int senderUserId;
             int receiverUserId;
@@ -89,10 +90,10 @@ public class TransferController {
     public List<TransferDTO> getAllPendingTransfers(Principal principal){
         //Extract username from logged in user
         String username = principal.getName();
-        try{
+        if(transferDao.getPendingDTOs(username).size()!=0){
             //returns a list of the JSON formatted object
             return transferDao.getPendingDTOs(username);
-        }catch (RuntimeException e){
+        }else{
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No pending transfers found!");
         }
     }
@@ -100,10 +101,10 @@ public class TransferController {
 
     @GetMapping(path = "user/transfer/{id}")
     public TransferDTO getTransferJsonObjectById(@PathVariable int id){
-        try{
+        if(transferDao.getTransferDTOByID(id)!=null) {
             //return a JSON object with the necessary information
             return transferDao.getTransferDTOByID(id);
-        }catch (RuntimeException e){
+        }else{
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Unable to find specified transfer!");
         }
     }
@@ -115,19 +116,20 @@ public class TransferController {
             The sender's account balance is decreased by the amount of the transfer.
             I can't send more TE Bucks than I have in my account.
             I can't send a zero or negative amount.*/
+
+        //ToDO need to implement account selection
+
         String senderName = transfer.getFrom();
+        //ensure the path id and body id match
+        if(transfer.getTransferId()!=id){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Transfer ID does not match!");
+        }
         //initialize an empty DTO
         TransferApprovalDTO results = null;
         //pull the pending transfer from the database
         Transfer pendingTransfer = transferDao.getTransferByID(id);
+        //pull status from transfer
         String currentStatus = pendingTransfer.getStatus();
-        if(transfer.getTransferId()!=id){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Transfer ID does not match!");
-
-        }
-
-
-
         if (principal.getName().equals(senderName) && !currentStatus.equals("*Approved*") && !currentStatus.equals("*Rejected*") && transfer.isApprove()) {
 
             // get the sender account id from the transfer
