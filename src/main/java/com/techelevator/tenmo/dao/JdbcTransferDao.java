@@ -111,7 +111,6 @@ public class JdbcTransferDao implements TransferDao {
             INSERT INTO transfer(sender_account_id, receiver_account_id, approve_status, amount)
             VALUES((SELECT account_id FROM account WHERE user_id = ?),(SELECT account_id FROM account WHERE user_id = ?),'*Pending*',?)RETURNING transfer_id;
          */
-        //ToDO need to implement account selection
         TransferDTO createdTransferDTO = null;
         String sql = "INSERT INTO transfer(sender_account_id, receiver_account_id, approve_status, amount)\n" +
                      "VALUES((SELECT account_id FROM account WHERE user_id = ?),(SELECT account_id FROM account WHERE user_id = ?),?,?)RETURNING transfer_id;";
@@ -137,6 +136,44 @@ public class JdbcTransferDao implements TransferDao {
         }
         return createdTransferDTO;
     }
+
+    @Override
+    public TransferDTO createTransferWithAccounts(Transfer newTransfer, int senderAccountId, int receiverAccountId) {
+        /* --create transfer (easiest way)
+            INSERT INTO transfer(sender_account_id, receiver_account_id, approve_status, amount)
+            VALUES(?,?,'*Pending*',?)RETURNING transfer_id;
+
+         */
+
+        TransferDTO createdTransferDTO = null;
+        String sql = "INSERT INTO transfer(sender_account_id, receiver_account_id, approve_status, amount)\n" +
+                     "VALUES(?,?,'*Pending*',?)RETURNING transfer_id;";
+
+        try{
+            int newTransferId = jdbcTemplate.queryForObject(sql,Integer.class,
+                    senderAccountId,
+                    receiverAccountId,
+                    newTransfer.getStatus(),
+                    newTransfer.getAmount());
+            if(newTransferId>0){
+                createdTransferDTO = getTransferDTOByID(newTransferId);
+            }
+        }catch (CannotGetJdbcConnectionException e){
+            throw new RuntimeException("Unable to contact the database!", e);
+        }catch (BadSqlGrammarException e){
+            throw new RuntimeException("Bad SQL query: " + e.getSql()
+                    +"\n"+e.getSQLException(), e);
+        }catch (DataIntegrityViolationException e){
+            throw new RuntimeException("Database Integrity Violation", e);
+        }catch (NullPointerException e){
+            throw new RuntimeException("Null value returned", e);
+        }
+        return createdTransferDTO;
+    }
+
+
+
+
 
     @Override
     public TransferDTO updateTransferStatus(String status, int id) {
@@ -239,7 +276,6 @@ public class JdbcTransferDao implements TransferDao {
     @Override
     @Transactional
     public TransferApprovalDTO completeTransaction(Transfer pendingTransfer) {
-        //ToDO need to implement account selection
 
         String sql1 = "UPDATE account SET balance = balance - ? \n" +
                       "WHERE account_id = ?;";

@@ -16,6 +16,7 @@ public class Transfer {
     private BigDecimal amount;
     private String status;
 
+    // For testing purposes
     public Transfer(int transfer_id, int senderAccountId, int receiverAccountId, BigDecimal amount, String status) {
         this.transfer_id = transfer_id;
         this.senderAccountId = senderAccountId;
@@ -67,16 +68,5 @@ public class Transfer {
 
     public void setReceiverAccountId(int receiverAccountId) {
         this.receiverAccountId = receiverAccountId;
-    }
-
-    @Override
-    public String toString() {
-        return "Transfer{" +
-                "transfer_id=" + transfer_id +
-                ", senderAccountId=" + senderAccountId +
-                ", receiverAccountId=" + receiverAccountId +
-                ", amount=" + amount +
-                ", status='" + status + '\'' +
-                '}';
     }
 }

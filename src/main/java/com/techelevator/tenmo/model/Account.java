@@ -10,11 +10,12 @@ public class Account {
     @NotNull
     private int userId;
     @NotBlank
-    private BigDecimal balance = new BigDecimal("1000.00");
+    private BigDecimal balance;
 
     public Account() {
+        this.balance = new BigDecimal("1000.00");
     }
-
+    // For testing purposes only
     public Account(int accountId, int userId, BigDecimal balance) {
         this.accountId = accountId;
         this.userId = userId;
@@ -45,12 +46,4 @@ public class Account {
         this.balance = balance;
     }
 
-    @Override
-    public String toString() {
-        return "Account{" +
-                "accountId: " + accountId +
-                ", userId: " + userId +
-                ", balance: " + balance +
-                '}';
-    }
 }

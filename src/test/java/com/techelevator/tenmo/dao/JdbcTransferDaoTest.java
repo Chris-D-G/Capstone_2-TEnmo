@@ -39,7 +39,7 @@ public class JdbcTransferDaoTest extends BaseDaoTests {
     private TransferDTO TEST_TransferDTO2;
 
 
-
+    //ToDO add extra tests for the new methods(multi accounts)
     @Before
     public void setup() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);

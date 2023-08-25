@@ -6,6 +6,7 @@ import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.TransferApprovalDTO;
 import com.techelevator.tenmo.model.TransferDTO;
+import com.techelevator.tenmo.model.TransferMultiAccountDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -38,9 +39,8 @@ public class TransferController {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(path = "user/transfer")
+    @PostMapping(path = "user/transfer/")
     public TransferDTO createTransfer(@RequestBody @Valid TransferDTO transfer, Principal principal) {
-        //ToDO need to implement account selection
         try{
             int senderUserId;
             int receiverUserId;
@@ -56,6 +56,7 @@ public class TransferController {
                 senderUserId  = userDao.findIdByUsername(transfer.getTo());
                 //Set the receiver account id by using the user dao method and principal
                 receiverUserId= userDao.findIdByUsername(principal.getName());
+
             }
             //Create a new transfer object
             Transfer newTransfer = new Transfer();
@@ -72,6 +73,44 @@ public class TransferController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Cannot create a transfer to the same username");
         }catch (RuntimeException e){
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unable to Create Transfer!");
+        }
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(path = "user/transfer/multi")
+    public TransferDTO createTransferForMultiAccounts(@RequestBody @Valid TransferMultiAccountDTO transfer, Principal principal ){
+        try{
+            int senderAccountId;
+            int receiverAccountId;
+
+            if(!transfer.getTo().equals(principal.getName())){
+                //This is the user sending money to another user
+                //Set the sender account id by using the user dao method and principal
+                senderAccountId = transfer.getUserAccountId();
+                //Set the receiver account id by using the user dao method and the transfer json object receiver name
+                receiverAccountId = transfer.getOtherAccountId();
+            }else{
+                // This the user making a request from another user
+                //Set the sender account id by using the user dao method and the transfer json object receiver name
+                senderAccountId  = transfer.getOtherAccountId();
+                //Set the receiver account id by using the user dao method and principal
+                receiverAccountId = transfer.getUserAccountId();
+            }
+            //Create a new transfer object
+            Transfer newTransfer = new Transfer();
+            //Check to see if the sender and receiver IDs match
+            if(senderAccountId!=receiverAccountId){
+                //Set the transfer amount by using the transfer json object amount
+                newTransfer.setAmount(transfer.getAmount());
+                return transferDao.createTransferWithAccounts(newTransfer,senderAccountId,receiverAccountId);
+            }else{
+                //This exception will never be seen as it is thrown to the catch statement
+                throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT,"TEST: Cannot create a transfer to the same username");
+            }
+        }catch (ResponseStatusException e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Cannot create a transfer to the same username");
+        }catch (RuntimeException e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unable to Create Transfer!");
         }
     }
 
@@ -117,7 +156,6 @@ public class TransferController {
             I can't send more TE Bucks than I have in my account.
             I can't send a zero or negative amount.*/
 
-        //ToDO need to implement account selection
 
         String senderName = transfer.getFrom();
         //ensure the path id and body id match
