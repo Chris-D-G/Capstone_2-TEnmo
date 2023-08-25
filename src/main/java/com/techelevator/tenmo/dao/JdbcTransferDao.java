@@ -247,7 +247,7 @@ public class JdbcTransferDao implements TransferDao {
 
         try{
             // process the decrement
-            int decrementedRowCount = jdbcTemplate.update(sql1, int.class, pendingTransfer.getAmount(), pendingTransfer.getSenderAccountId());
+            int decrementedRowCount = jdbcTemplate.update(sql1, Integer.class, pendingTransfer.getAmount(), pendingTransfer.getSenderAccountId());
             // check to see if valid update was performed
             if(decrementedRowCount ==0 ){
                 throw new RuntimeException("Expected an updated row. None were updated");
@@ -257,7 +257,7 @@ public class JdbcTransferDao implements TransferDao {
 
             }
             //process the increment
-            int incrementedRowCount = jdbcTemplate.update(sql2,int.class,pendingTransfer.getAmount(),pendingTransfer.getReceiverAccountId());
+            int incrementedRowCount = jdbcTemplate.update(sql2,Integer.class,pendingTransfer.getAmount(),pendingTransfer.getReceiverAccountId());
             //check to see if valid update was performed
             if(incrementedRowCount ==0){
                 throw new RuntimeException("Expected an updated row. None were updated");
