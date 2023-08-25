@@ -59,7 +59,8 @@ INSERT INTO account(account_id,user_id,balance)
 VALUES(2101,1101,1000),
 (2102,1102,2000),
 (2103,1103,3000),
-(2104,1104,40000)
+(2104,1104,40000),
+(2105,1101,3456.12)
 ;
 
 INSERT INTO transfer (transfer_id,sender_account_id,receiver_account_id,approve_status,amount)
