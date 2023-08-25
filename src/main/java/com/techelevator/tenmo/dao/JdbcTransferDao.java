@@ -41,8 +41,8 @@ public class JdbcTransferDao implements TransferDao {
                     "JOIN tenmo_user AS t1 on a1.user_id = t1.user_id\n" +
                     "JOIN tenmo_user AS t2 on a2.user_id = t2.user_id\n" +
 
-                    "WHERE sender_account_id=(SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
-                    "OR receiver_account_id = (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
+                    "WHERE sender_account_id IN (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
+                    "OR receiver_account_id IN (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
                     "ORDER BY transfer_id;";
         List<TransferDTO> returnedTransferDTOs = new ArrayList<>();
         try{
@@ -250,8 +250,8 @@ public class JdbcTransferDao implements TransferDao {
                      "JOIN tenmo_user AS t1 on a1.user_id = t1.user_id\n" +
                      "JOIN tenmo_user AS t2 on a2.user_id = t2.user_id\n" +
                      "WHERE approve_status ILIKE '%pending%'\n" +
-                     "AND (sender_account_id=(SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
-                     "OR receiver_account_id = (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?))\n" +
+                     "AND (sender_account_id IN (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?)\n" +
+                     "OR receiver_account_id IN (SELECT account_id FROM account JOIN tenmo_user ON account.user_id = tenmo_user.user_id WHERE tenmo_user.username = ?))\n" +
                      "ORDER BY transfer_id;";
         try{
             SqlRowSet results= jdbcTemplate.queryForRowSet(sql,username,username);

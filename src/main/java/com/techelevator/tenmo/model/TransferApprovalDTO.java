@@ -15,7 +15,7 @@ public class TransferApprovalDTO {
     private String from;
     @NotEmpty
     private String to;
-
+    @NotEmpty
     private boolean approve;
 
     private String status;

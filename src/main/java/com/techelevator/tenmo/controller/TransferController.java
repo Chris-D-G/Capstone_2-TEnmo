@@ -128,7 +128,7 @@ public class TransferController {
             // get the balance of the sender by looking up the account id
             BigDecimal senderBalance = accountDao.findAccountById(senderAccountId).getBalance();
             // check senderBalance >0
-            int checkPositiveBalance = pendingTransferAmount.compareTo(new BigDecimal("0"));
+            int checkPositiveBalance = pendingTransferAmount.compareTo(new BigDecimal("0.00"));
             // check pending amount is less than sender balance
             int checkTransferLessThanBalance = pendingTransferAmount.compareTo(senderBalance);
             if(checkPositiveBalance > 0 && checkTransferLessThanBalance <= 0){ //ADD approval from user
