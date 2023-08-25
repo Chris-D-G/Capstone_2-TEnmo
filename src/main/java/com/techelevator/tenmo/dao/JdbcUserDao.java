@@ -97,25 +97,18 @@ public class JdbcUserDao implements UserDao {
         String sql = "INSERT INTO tenmo_user (username, password_hash) VALUES (?, ?) RETURNING user_id";
         String password_hash = new BCryptPasswordEncoder().encode(password);
         Integer newUserId = null;
-        try {
-            newUserId = jdbcTemplate.queryForObject(sql, Integer.class, username, password_hash);
-        }catch (CannotGetJdbcConnectionException e){
-            throw new RuntimeException("Unable to contact the database!", e);
-        }catch (BadSqlGrammarException e){
-            throw new RuntimeException("Bad SQL query: " + e.getSql()
-                    +"\n"+e.getSQLException(), e);
-        }catch (DataIntegrityViolationException e){
-            throw new RuntimeException("Database Integrity Violation", e);
-        }
+
 
         // TODO: Create the account record with initial balance
-        AccountDao accountDao = new JdbcAccountDao(jdbcTemplate);
-        Account account = new Account();
-        account.setUserId(newUserId);
-        account = accountDao.createAccount(account);
-
-
-
+        try{
+            newUserId = jdbcTemplate.queryForObject(sql, Integer.class, username, password_hash);
+            AccountDao accountDao = new JdbcAccountDao(jdbcTemplate);
+            Account account = new Account();
+            account.setUserId(newUserId);
+            account = accountDao.createAccount(account);
+        }catch (Exception e){
+            return false;
+        }
 
         return true;
     }

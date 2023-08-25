@@ -109,17 +109,27 @@ public class TransferController {
     }
 
     @PutMapping(path = "user/transfer/{id}")
-    public TransferApprovalDTO attemptTransaction(@PathVariable int transferId,  @RequestBody @Valid TransferApprovalDTO transfer, Principal principal){
+    public TransferApprovalDTO attemptTransaction(@RequestBody @Valid TransferApprovalDTO transfer,Principal principal,@PathVariable int id) {
          /*For an approved request it must check the requirements of
             The receiver's account balance is increased by the amount of the transfer.
             The sender's account balance is decreased by the amount of the transfer.
             I can't send more TE Bucks than I have in my account.
             I can't send a zero or negative amount.*/
         String senderName = transfer.getFrom();
+        //initialize an empty DTO
+        TransferApprovalDTO results = null;
+        //pull the pending transfer from the database
+        Transfer pendingTransfer = transferDao.getTransferByID(id);
+        String currentStatus = pendingTransfer.getStatus();
+        if(transfer.getTransferId()!=id){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Transfer ID does not match!");
 
-        if(principal.getName().equals(senderName) && transfer.isApprove()){
-            //pull the pending transfer from the database
-            Transfer pendingTransfer = transferDao.getTransferByID(transferId);
+        }
+
+
+
+        if (principal.getName().equals(senderName) && !currentStatus.equals("*Approved*") && !currentStatus.equals("*Rejected*") && transfer.isApprove()) {
+
             // get the sender account id from the transfer
             int senderAccountId = pendingTransfer.getSenderAccountId();
             // get the pending transfer amount from the transfer
@@ -130,21 +140,36 @@ public class TransferController {
             int checkPositiveBalance = pendingTransferAmount.compareTo(new BigDecimal("0.00"));
             // check pending amount is less than sender balance
             int checkTransferLessThanBalance = pendingTransferAmount.compareTo(senderBalance);
-            if(checkPositiveBalance > 0 && checkTransferLessThanBalance <= 0){
+            if (checkPositiveBalance > 0 && checkTransferLessThanBalance <= 0) {
                 //proceed by completing the transaction that adds money to receiver and subtracts from sender
-                transferDao.completeTransaction(pendingTransfer);
+                results = transferDao.completeTransaction(pendingTransfer);
 
-            }else{
+            } else {
                 // if the conditions are not met
-                transferDao.updateTransferStatus("*Rejected",transferId);
+                transferDao.updateTransferStatus("*Rejected*", transfer.getTransferId());
+                results = new TransferApprovalDTO(transfer.getTransferId(),
+                        transfer.getAmount(),
+                        transfer.getFrom(),
+                        transfer.getTo(),
+                        false,
+                        "*Rejected*");
                 //error message
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unable to proceed with transfer! Check balance!");
             }
+        } else if (currentStatus.equals("*Approved*") || currentStatus.equals("*Rejected*") ) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This transfer is no longer open! Please create a new transfer!");
+
+        }else{
+            transferDao.updateTransferStatus("*Rejected*",transfer.getTransferId());
+            results = new TransferApprovalDTO(transfer.getTransferId(),
+                    transfer.getAmount(),
+                    transfer.getFrom(),
+                    transfer.getTo(),
+                    false,
+                    "*Rejected*");
+
         }
-
-
-
-        return new TransferApprovalDTO();
+        return results;
 
 
     }

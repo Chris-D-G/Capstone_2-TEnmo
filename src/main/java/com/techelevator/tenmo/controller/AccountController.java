@@ -52,11 +52,22 @@ public class AccountController {
         }
     }
 
-
-
     @RequestMapping(path = "/user/balances", method = RequestMethod.GET)
     public List<Balance> getBalancesByUsername(Principal principal){
         String username = principal.getName();
         return accountDao.getBalanceByUsername(username);
     }
+
+    @PostMapping(path = "/user/create")
+    public Account createNewAccount(Principal principal){
+        String username = principal.getName();
+        Account pendingAccount = new Account();
+        pendingAccount.setUserId(userDao.findIdByUsername(username));
+
+        return accountDao.createAccount(pendingAccount);
+    }
+
+
+
+
 }
