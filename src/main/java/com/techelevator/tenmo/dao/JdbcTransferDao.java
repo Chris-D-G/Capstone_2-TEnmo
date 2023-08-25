@@ -239,15 +239,15 @@ public class JdbcTransferDao implements TransferDao {
     @Transactional
     public TransferApprovalDTO completeTransaction(Transfer pendingTransfer) {
 
-        String sql1 = "UPDATE account SET balance = balance-?\n" +
-                     "WHERE account_id = ?;";
+        String sql1 = "UPDATE account SET balance = balance - ? \n" +
+                      "WHERE account_id = ?;";
 
-        String sql2 = "UPDATE account SET balance = balance + ?\n" +
-                     "WHERE account_id = ?;";
+        String sql2 = "UPDATE account SET balance = balance + ? \n" +
+                      "WHERE account_id = ?;";
 
         try{
             // process the decrement
-            int decrementedRowCount = jdbcTemplate.update(sql1, Integer.class, pendingTransfer.getAmount(), pendingTransfer.getSenderAccountId());
+            int decrementedRowCount = jdbcTemplate.update(sql1, pendingTransfer.getAmount(), pendingTransfer.getSenderAccountId());
             // check to see if valid update was performed
             if(decrementedRowCount ==0 ){
                 throw new RuntimeException("Expected an updated row. None were updated");
@@ -257,7 +257,7 @@ public class JdbcTransferDao implements TransferDao {
 
             }
             //process the increment
-            int incrementedRowCount = jdbcTemplate.update(sql2,Integer.class,pendingTransfer.getAmount(),pendingTransfer.getReceiverAccountId());
+            int incrementedRowCount = jdbcTemplate.update(sql2,pendingTransfer.getAmount(),pendingTransfer.getReceiverAccountId());
             //check to see if valid update was performed
             if(incrementedRowCount ==0){
                 throw new RuntimeException("Expected an updated row. None were updated");
@@ -273,15 +273,15 @@ public class JdbcTransferDao implements TransferDao {
             throw new RuntimeException("Database Integrity Violation", e);
         }
         //If successful updates are performed update the status of the associated transfer
-        updateTransferStatus("*Approved",pendingTransfer.getTransfer_id());
+        updateTransferStatus("*Approved*",pendingTransfer.getTransfer_id());
         TransferDTO current = getTransferDTOByID(pendingTransfer.getTransfer_id());
         TransferApprovalDTO  updatedApprovalDTO = new TransferApprovalDTO();
         updatedApprovalDTO.setTransferId(pendingTransfer.getTransfer_id());
         updatedApprovalDTO.setAmount(pendingTransfer.getAmount());
         updatedApprovalDTO.setStatus(pendingTransfer.getStatus());
         updatedApprovalDTO.setApprove(true);
-        updatedApprovalDTO.setFrom(updatedApprovalDTO.getFrom());
-        updatedApprovalDTO.setTo(updatedApprovalDTO.getTo());
+        updatedApprovalDTO.setFrom(current.getFrom());
+        updatedApprovalDTO.setTo(current.getTo());
 
         return updatedApprovalDTO;
     }
