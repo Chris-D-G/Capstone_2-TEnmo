@@ -17,16 +17,12 @@ public class TransferMultiAccountDTO {
     private String from;
     @NotEmpty
     private String to;
-    @NotNull
-    @NotEmpty
+
     @Min(value = 2001)
-    @JsonProperty("user_account")
     private int userAccountId;
 
-    @NotNull
-    @NotEmpty
+
     @Min(value = 2001)
-    @JsonProperty("other_account")
     private int otherAccountId;
 
     public TransferMultiAccountDTO() {

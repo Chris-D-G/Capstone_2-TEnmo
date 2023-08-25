@@ -153,7 +153,6 @@ public class JdbcTransferDao implements TransferDao {
             int newTransferId = jdbcTemplate.queryForObject(sql,Integer.class,
                     senderAccountId,
                     receiverAccountId,
-                    newTransfer.getStatus(),
                     newTransfer.getAmount());
             if(newTransferId>0){
                 createdTransferDTO = getTransferDTOByID(newTransferId);

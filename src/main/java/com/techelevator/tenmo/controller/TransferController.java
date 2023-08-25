@@ -183,6 +183,7 @@ public class TransferController {
             if (checkPositiveBalance > 0 && checkTransferLessThanBalance <= 0) {
                 //proceed by completing the transaction that adds money to receiver and subtracts from sender
                 results = transferDao.completeTransaction(pendingTransfer);
+                results.setStatus(transferDao.getTransferByID(results.getTransferId()).getStatus());
 
             } else {
                 // if the conditions are not met
