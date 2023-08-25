@@ -115,24 +115,20 @@ public class JdbcTransferDaoTest extends BaseDaoTests {
         Assert.assertEquals(rejected, updatedTransferStatus);
     }
 
-//    @Test
-//    public void completeTransaction() {
-//        BigDecimal amount = new BigDecimal("500.00");
-//        int senderId = 2103;
-//        int receiverId = 2104;
-//
-//        BigDecimal account1Balance = ACCOUNT_1.getBalance();
-//        BigDecimal account2Balance = ACCOUNT_2.getBalance();
-//        BigDecimal finalBalance1 = account1Balance.subtract(amount);
-//        BigDecimal finalBalance2 = account2Balance.add(amount);
-//
-//        sut.completeTransaction(amount, senderId, receiverId);
-//        BigDecimal actualBalance1 = accountDao.findAccountById(2103).getBalance();
-//        BigDecimal actualBalance2 = accountDao.findAccountById(2104).getBalance();
-//
-//        Assert.assertEquals(finalBalance1, actualBalance1);
-//        Assert.assertEquals(finalBalance2, actualBalance2);
-//    }
+    @Test
+    public void completeTransaction() {
+        BigDecimal account1Balance = ACCOUNT_1.getBalance();
+        BigDecimal account2Balance = ACCOUNT_2.getBalance();
+        BigDecimal finalBalance1 = account1Balance.subtract(TRANSFER_4.getAmount());
+        BigDecimal finalBalance2 = account2Balance.add(TRANSFER_4.getAmount());
+
+        sut.completeTransaction(TRANSFER_4);
+        BigDecimal actualBalance1 = accountDao.findAccountById(2101).getBalance();
+        BigDecimal actualBalance2 = accountDao.findAccountById(2102).getBalance();
+
+        Assert.assertEquals(finalBalance1, actualBalance1);
+        Assert.assertEquals(finalBalance2, actualBalance2);
+    }
 
     @Test
     public void getTransferByID() {
