@@ -41,14 +41,27 @@ JOIN account AS a2 ON transfer.receiver_account_id = a2.account_id
 JOIN tenmo_user AS t1 on a1.user_id = t1.user_id
 JOIN tenmo_user AS t2 on a2.user_id = t2.user_id
 WHERE transfer_id = 3104;
-
+-- **************************************************************************************************
+-- Return transfer with approved status by specific transfer ID 
+SELECT transfer_id,amount ,t1.username AS from,t2.username AS to,approve_status
+FROM transfer
+JOIN account AS a1 ON transfer.sender_account_id = a1.account_id
+JOIN account AS a2 ON transfer.receiver_account_id = a2.account_id
+JOIN tenmo_user AS t1 on a1.user_id = t1.user_id
+JOIN tenmo_user AS t2 on a2.user_id = t2.user_id
+WHERE transfer_id = 3104;
 
 -- **************************************************************************************************
---create transfer (easy way)
+--create transfer (easier way)
 INSERT INTO transfer(sender_account_id, receiver_account_id, approve_status, amount)
 VALUES((SELECT account_id FROM account WHERE user_id = ?),(SELECT account_id FROM account WHERE user_id = ?),'*Pending*',?)RETURNING transfer_id;
 
 (SELECT account_id FROM account WHERE user_id = 1102)
+
+-- **************************************************************************************************
+--create transfer (easiest way)
+INSERT INTO transfer(sender_account_id, receiver_account_id, approve_status, amount)
+VALUES(?,?,'*Pending*',?)RETURNING transfer_id;
 
 -- **************************************************************************************************
 -- create transfer (complicated way without user DAO and assumes one account per user...)

@@ -18,10 +18,11 @@ public interface TransferDao {
 
     TransferDTO updateTransferStatus(String status, int id);
 
-    TransferApprovalDTO completeTransaction(Transfer pendingTransfer); //BigDecimal amount, int senderAccountId, int receiverAccountId
+    TransferApprovalDTO completeTransaction(Transfer pendingTransfer);
 
     List<TransferDTO> getPendingDTOs (String username);
 
+    TransferDTO createTransferWithAccounts(Transfer newTransfer, int senderAccountId, int receiverAccountId);
 
 
 }

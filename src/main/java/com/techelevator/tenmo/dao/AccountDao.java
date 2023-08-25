@@ -12,7 +12,7 @@ public interface AccountDao {
     Account createAccount(Account account); //tested
     List<Account> findByUsername(String username); //tested
     Account findAccountById(int accountId); //tested
-    Account updateAccount(int accountId, BigDecimal balance); //tested
+//    Account updateAccount(int accountId, BigDecimal balance); //tested
     List<Balance> getBalanceByUsername(String username);
 
 }

@@ -24,6 +24,7 @@ public class TransferApprovalDTO {
     public TransferApprovalDTO() {
     }
 
+    //For testing purposes
     public TransferApprovalDTO(int transferId, BigDecimal amount, String from, String to, boolean approve, String status) {
         this.transferId = transferId;
         this.amount = amount;
@@ -81,15 +82,4 @@ public class TransferApprovalDTO {
         this.status = status;
     }
 
-    @Override
-    public String toString() {
-        return "TransferApprovalDTO{" +
-                "transferId=" + transferId +
-                ", amount=" + amount +
-                ", from='" + from + '\'' +
-                ", to='" + to + '\'' +
-                ", approve=" + approve +
-                ", status='" + status + '\'' +
-                '}';
-    }
 }
