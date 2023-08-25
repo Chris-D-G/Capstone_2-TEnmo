@@ -11,7 +11,7 @@ public class TransferApprovalDTO {
     @NotNull
     @Positive
     private BigDecimal amount;
-
+    @NotEmpty
     private String from;
     @NotEmpty
     private String to;
